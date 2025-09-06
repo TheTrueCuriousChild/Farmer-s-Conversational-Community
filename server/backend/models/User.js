@@ -11,9 +11,9 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
       unique: true,
       lowercase: true,
+      sparse: true, // Allows null values while maintaining uniqueness
     },
     phone: {
       type: String,
@@ -26,14 +26,14 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
     },
 
-    // User Type
+    // User Type - Updated to match your separate models
     role: {
       type: String,
-      enum: ["farmer", "retailer", "labour", "expert", "admin"],
+      enum: ["farmer", "laborer", "retailer", "admin"], // Updated to match your models
       required: true,
     },
 
-    // Location Information
+    // Basic Location Information (common for all users)
     location: {
       state: { type: String, required: true },
       district: { type: String, required: true },
@@ -45,35 +45,17 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    // Profile Information (varies by role)
-    profile: {
-      // Farmer specific
-      farmSize: { type: Number }, // in acres
-      cropTypes: [{ type: String }],
-      farmingExperience: { type: Number }, // in years
-      landOwnership: { type: String, enum: ["owned", "leased", "sharecropping"] },
-      irrigationType: { type: String, enum: ["rain-fed", "canal", "borewell", "drip", "sprinkler"] },
-
-      // Retailer specific
-      businessName: { type: String },
-      businessType: { type: String, enum: ["seeds", "fertilizers", "pesticides", "equipment", "general"] },
-      licenseNumber: { type: String },
-      yearsInBusiness: { type: Number },
-
-      // Labour specific
-      skills: [{ type: String }],
-      experience: { type: Number }, // in years
-      dailyWage: { type: Number },
-      availability: { type: String, enum: ["available", "busy", "seasonal"] },
-
-      // Expert specific
-      specialization: [{ type: String }],
-      qualification: { type: String },
-      certifications: [{ type: String }],
-      consultationFee: { type: Number },
+    // Reference to detailed profile based on role
+    profileRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      refPath: 'profileModel'
+    },
+    profileModel: {
+      type: String,
+      enum: ['Farmer', 'Laborer', 'Retailer', 'Admin']
     },
 
-    // Preferences
+    // Common preferences for all users
     preferences: {
       language: { type: String, default: "en" },
       notifications: {
@@ -88,7 +70,7 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    // Verification Status
+    // Verification Status (common for all users)
     verification: {
       isVerified: { type: Boolean, default: false },
       documents: [
@@ -106,7 +88,7 @@ const userSchema = new mongoose.Schema(
     lastLogin: { type: Date },
     isActive: { type: Boolean, default: true },
 
-    // Ratings (for experts and retailers)
+    // Common ratings system
     ratings: {
       average: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
@@ -117,10 +99,12 @@ const userSchema = new mongoose.Schema(
   },
 )
 
-// Index for location-based queries
+// Indexes
 userSchema.index({ "location.state": 1, "location.district": 1 })
 userSchema.index({ role: 1 })
 userSchema.index({ "location.coordinates": "2dsphere" })
+userSchema.index({ phone: 1 }, { unique: true })
+userSchema.index({ email: 1 }, { unique: true, sparse: true })
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
@@ -135,17 +119,92 @@ userSchema.pre("save", async function (next) {
   }
 })
 
+// Set profileModel based on role
+userSchema.pre("save", function (next) {
+  if (this.isModified("role")) {
+    const modelMap = {
+      farmer: "Farmer",
+      laborer: "Laborer", 
+      retailer: "Retailer",
+      admin: "Admin"
+    }
+    this.profileModel = modelMap[this.role]
+  }
+  next()
+})
+
 // Compare password method
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password)
 }
 
-// Get public profile (exclude sensitive data)
-userSchema.methods.getPublicProfile = function () {
+// Get public profile with populated detailed profile
+userSchema.methods.getPublicProfile = async function () {
   const userObject = this.toObject()
   delete userObject.password
   delete userObject.verification.documents
+  
+  // Populate the detailed profile if profileRef exists
+  if (this.profileRef) {
+    await this.populate('profileRef')
+    userObject.detailedProfile = this.profileRef
+  }
+  
   return userObject
+}
+
+// Static method to create user with detailed profile
+userSchema.statics.createUserWithProfile = async function (userData) {
+  const session = await mongoose.startSession()
+  
+  try {
+    session.startTransaction()
+    
+    // Extract role-specific data
+    const { role, profileData, ...baseUserData } = userData
+    
+    // Create the base user
+    const user = new this({ ...baseUserData, role })
+    await user.save({ session })
+    
+    // Create the detailed profile based on role
+    let detailedProfile
+    switch (role) {
+      case 'farmer':
+        const Farmer = mongoose.model('Farmer')
+        detailedProfile = new Farmer({ userId: user._id, ...profileData })
+        break
+      case 'laborer':
+        const Laborer = mongoose.model('Laborer')
+        detailedProfile = new Laborer({ userId: user._id, ...profileData })
+        break
+      case 'retailer':
+        const Retailer = mongoose.model('Retailer')
+        detailedProfile = new Retailer({ userId: user._id, ...profileData })
+        break
+      case 'admin':
+        const Admin = mongoose.model('Admin')
+        detailedProfile = new Admin({ userId: user._id, ...profileData })
+        break
+      default:
+        throw new Error('Invalid role specified')
+    }
+    
+    await detailedProfile.save({ session })
+    
+    // Link the detailed profile to the user
+    user.profileRef = detailedProfile._id
+    await user.save({ session })
+    
+    await session.commitTransaction()
+    
+    return { user, detailedProfile }
+  } catch (error) {
+    await session.abortTransaction()
+    throw error
+  } finally {
+    session.endSession()
+  }
 }
 
 module.exports = mongoose.model("User", userSchema)

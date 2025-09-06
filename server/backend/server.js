@@ -1,5 +1,4 @@
 const express = require("express")
-const mongoose = require("mongoose")
 const cors = require("cors")
 const morgan = require("morgan")
 require("dotenv").config()
@@ -9,6 +8,8 @@ const errorHandler = require("./middlewares/errorHandler")
 
 // Route imports
 const authRoutes = require("./routes/authRoutes")
+const farmerRoutes = require("./routes/farmerRoutes")
+const laborerRoutes = require("./routes/laborerRoutes")
 
 const app = express()
 
@@ -22,7 +23,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(morgan("combined"))
 
 // Health check
-app.get("/health", (req, res) => {
+app.get("/test", (req, res) => {
   res.json({
     success: true,
     message: "KrishiSeva API is running",
@@ -31,7 +32,9 @@ app.get("/health", (req, res) => {
 })
 
 // API Routes
-app.use("/api/auth", authRoutes)
+app.use("/auth", authRoutes)
+app.use("/farmers", farmerRoutes)
+app.use("/laborers", laborerRoutes)
 
 // 404 handler
 app.use("*", (req, res) => {
@@ -49,7 +52,7 @@ const PORT = process.env.PORT || 5000
 app.listen(PORT, () => {
   console.log(`🚀 KrishiSeva Server running on port ${PORT}`)
   console.log(`📱 Health check: http://localhost:${PORT}/health`)
-  console.log(`🔗 API Base URL: http://localhost:${PORT}/api`)
+  console.log(`🔗 API Base URL: http://localhost:${PORT}/`)
 })
 
 // Handle unhandled promise rejections
