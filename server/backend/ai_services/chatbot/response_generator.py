@@ -10,7 +10,7 @@ class ResponseGenerator:
     def __init__(self, gemini_api_key: str, retriever: DocumentRetriever, 
                  translator: MultilingualTranslator, intent_classifier: IntentClassifier):
         genai.configure(api_key=gemini_api_key)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
         self.retriever = retriever
         self.translator = translator
         self.intent_classifier = intent_classifier

@@ -1,6 +1,7 @@
 from typing import Dict, List, Any, Optional
 import json
 from datetime import datetime, timedelta
+import re
 
 class ConversationContextManager:
     def __init__(self, redis_client=None):
@@ -129,5 +130,32 @@ class ConversationContextManager:
     async def extract_context_from_query(self, query: str, current_context: Dict[str, Any]) -> Dict[str, Any]:
         """Extract context information from user query."""
         extracted = {}
-        
-        # Crop
+        query_lower = query.lower()
+
+        # ✅ Extract crop names
+        crops = ["rice", "wheat", "maize", "coconut", "sugarcane", "cotton", "pulses"]
+        for crop in crops:
+            if crop in query_lower:
+                extracted["crop"] = crop
+                break
+
+        # ✅ Extract location (very basic example — you can expand with regex/NLP)
+        locations = ["kerala", "punjab", "maharashtra", "delhi", "karnataka", "tamil nadu"]
+        for loc in locations:
+            if loc in query_lower:
+                extracted["location"] = loc
+                break
+
+        # ✅ Detect farming type
+        if re.search(r"\borganic\b", query_lower):
+            extracted["farming_type"] = "organic"
+        elif re.search(r"\btraditional\b", query_lower):
+            extracted["farming_type"] = "traditional"
+
+        # ✅ Detect experience hints
+        if re.search(r"\bbeginner\b", query_lower):
+            extracted["experience_level"] = "beginner"
+        elif re.search(r"\bexpert\b", query_lower):
+            extracted["experience_level"] = "expert"
+
+        return extracted
