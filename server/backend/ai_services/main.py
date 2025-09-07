@@ -119,23 +119,25 @@ async def chat_endpoint(request: ChatRequest):
         
         conversation_handler = ai_services['conversation_handler']
         
-        # Process the conversation
+        # Process the conversation with correct parameter name
         result = await conversation_handler.handle_user_message(
-            request.user_id, 
-            request.message, 
-            {'preferred_language': request.language}
+            user_id=request.user_id,
+            message=request.message,
+            user_profile={'preferred_language': request.language}  # Changed from user_context to user_profile
         )
         
-        if not result['success']:
+        if not result.get('success', False):
             raise HTTPException(status_code=500, detail=result.get('error', 'Processing failed'))
         
+        metadata = result.get('metadata', {})
+        
         return ChatResponse(
-            success=result['success'],
-            response=result['response'],
-            intent=result['metadata']['intent'],
-            confidence=result['metadata']['confidence'],
-            language=result['metadata']['language_detected'],
-            suggestions=result['suggestions']
+            success=result.get('success', False),
+            response=result.get('response', ""),
+            intent=metadata.get('intent', "general_query"),
+            confidence=metadata.get('confidence', 0.0),
+            language=metadata.get('language_detected', request.language),
+            suggestions=result.get('suggestions', [])
         )
         
     except HTTPException:
@@ -143,6 +145,7 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         print(f"Chat endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
 
 
 @app.get("/conversation/{user_id}")

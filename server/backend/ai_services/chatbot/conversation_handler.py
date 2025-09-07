@@ -37,9 +37,13 @@ class ConversationHandler:
             # Get relevant context (simplified - no RAG retrieval)
             context_docs = self._get_simple_context(message, intent_info)
             
-            # Generate response
+            # Generate response - FIXED: Pass arguments correctly
             response_data = await self.response_generator.generate_response(
-                message, context_docs, user_context, detected_language, intent_info
+                query=message,
+                context_docs=context_docs,
+                user_context=user_context,
+                language=detected_language,
+                intent_info=intent_info  # Pass as keyword argument
             )
             
             # Add to conversation history
@@ -107,7 +111,7 @@ class ConversationHandler:
             ],
             'pest_control': [
                 r'\b(pest|insect|bug|caterpillar|കീടം|പുഴു)\b',
-                r'\b(control|spray|treatment|നിയന്ত്രണം|ചികിത്സ)\b'
+                r'\b(control|spray|treatment|നിയന്ത്രണം|ചികിത്സ)\b'
             ],
             'cultivation': [
                 r'\b(grow|plant|cultivation|farming|കൃഷി|നട്ട്)\b',
