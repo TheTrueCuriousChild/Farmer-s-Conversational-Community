@@ -10,6 +10,7 @@ const errorHandler = require("./middlewares/errorHandler")
 const authRoutes = require("./routes/authRoutes")
 const farmerRoutes = require("./routes/farmerRoutes")
 const laborerRoutes = require("./routes/laborerRoutes")
+const aiRoutes = require("./routes/aiRoutes") // AI routes
 
 const app = express()
 
@@ -35,6 +36,7 @@ app.get("/test", (req, res) => {
 app.use("/auth", authRoutes)
 app.use("/farmers", farmerRoutes)
 app.use("/laborers", laborerRoutes)
+app.use("/ai", aiRoutes) // AI routes
 
 // 404 handler
 app.use("*", (req, res) => {
@@ -51,7 +53,7 @@ const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
   console.log(`🚀 KrishiSeva Server running on port ${PORT}`)
-  console.log(`📱 Health check: http://localhost:${PORT}/health`)
+  console.log(`📱 Health check: http://localhost:${PORT}/test`)
   console.log(`🔗 API Base URL: http://localhost:${PORT}/`)
 })
 

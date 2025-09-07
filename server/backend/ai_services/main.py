@@ -1,335 +1,287 @@
-# server/ai_services/main.py - FastAPI Application
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
+from typing import Optional
 import os
-import asyncio
 from dotenv import load_dotenv
+import asyncio
 
 # Import our AI services
-from .rag_pipeline.document_processor import DocumentProcessor
-from .rag_pipeline.embeddings_manager import EmbeddingsManager
-from .rag_pipeline.vector_store import VectorStore
-from .rag_pipeline.retriever import DocumentRetriever
-from .nlp_services.translator import MultilingualTranslator
-from .nlp_services.intent_classifier import IntentClassifier
-from .chatbot.response_generator import ResponseGenerator
-from .chatbot.context_manager import ConversationContextManager
-from .chatbot.conversation_handler import ConversationHandler
-from .multimodal.image_processor import ImageProcessor
-from .utils.security import SecurityManager
-from .utils.validators import InputValidator
+from ai_services.chatbot.conversation_handler import ConversationHandler
+from ai_services.chatbot.response_generator import ResponseGenerator
+from ai_services.chatbot.context_manager import ConversationContextManager
+
+from ai_services.nlp_services.language_detector import LanguageDetector
+from ai_services.nlp_services.translator import MultilingualTranslator
+from ai_services.nlp_services.intent_classifier import IntentClassifier
+
+# ✅ Import from rag_pipeline
+from ai_services.rag_pipeline.retriever import DocumentRetriever
+from ai_services.rag_pipeline.embeddings_manager import EmbeddingsManager
+from ai_services.rag_pipeline.vector_store import VectorStore
 
 # Load environment variables
 load_dotenv()
 
-app = FastAPI(
-    title="Krishi Seva AI Services",
-    description="AI/ML services for agricultural advisory system",
-    version="1.0.0"
-)
+app = FastAPI(title="Krishi Seva AI Service", version="1.0.0")
 
-# CORS configuration
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Add your frontend URLs
+    allow_origins=["http://localhost:3000", "http://localhost:5000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Security
-security = HTTPBearer()
-security_manager = SecurityManager()
-input_validator = InputValidator()
+# Initialize services
+ai_services = {}
 
-# Pydantic Models
 class ChatRequest(BaseModel):
-    message: str
     user_id: str
-    language: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    message: str
+    language: Optional[str] = "en"
 
 class ChatResponse(BaseModel):
     success: bool
     response: str
-    metadata: Dict[str, Any]
-    suggestions: List[str]
+    intent: str
+    confidence: float
+    language: str
+    suggestions: list
 
-class ImageAnalysisRequest(BaseModel):
-    user_id: str
-    description: Optional[str] = None
-    language: Optional[str] = "en"
-
-class DocumentUploadResponse(BaseModel):
-    success: bool
-    message: str
-    documents_processed: int
-
-# Global AI service instances
-ai_services = {}
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize AI services on startup."""
     global ai_services
     
-    # Get API keys from environment
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
         raise Exception("GEMINI_API_KEY not found in environment variables")
     
-    # Initialize core components
-    document_processor = DocumentProcessor(gemini_api_key)
-    embeddings_manager = EmbeddingsManager(gemini_api_key)
-    vector_store = VectorStore()
-    retriever = DocumentRetriever(embeddings_manager, vector_store)
-    translator = MultilingualTranslator(gemini_api_key)
-    intent_classifier = IntentClassifier(gemini_api_key)
-    response_generator = ResponseGenerator(gemini_api_key, retriever, translator, intent_classifier)
-    context_manager = ConversationContextManager()
-    conversation_handler = ConversationHandler(response_generator, context_manager, retriever, translator)
-    image_processor = ImageProcessor(gemini_api_key)
-    
-    # Store in global dict
-    ai_services = {
-        'document_processor': document_processor,
-        'embeddings_manager': embeddings_manager,
-        'vector_store': vector_store,
-        'retriever': retriever,
-        'translator': translator,
-        'intent_classifier': intent_classifier,
-        'response_generator': response_generator,
-        'context_manager': context_manager,
-        'conversation_handler': conversation_handler,
-        'image_processor': image_processor
-    }
-    
-    print("AI services initialized successfully")
-
-# Dependency to get authenticated user
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Validate JWT token and get current user."""
     try:
-        user_data = security_manager.verify_token(credentials.credentials)
-        return user_data
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
-# Health check endpoint
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "services": "AI services running"}
-
-# Main chat endpoint
-@app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest, current_user: dict = Depends(get_current_user)):
-    """Main chat endpoint for farmer queries."""
-    try:
-        # Validate input
-        if not input_validator.validate_message(request.message):
-            raise HTTPException(status_code=400, detail="Invalid message content")
+        # Initialize core services
+        print("🤖 Initializing AI services...")
         
-        # Rate limiting check
-        if not security_manager.check_rate_limit(request.user_id):
-            raise HTTPException(status_code=429, detail="Rate limit exceeded")
+        # NLP Services
+        language_detector = LanguageDetector()
+        translator = MultilingualTranslator(gemini_api_key)
+        intent_classifier = IntentClassifier(gemini_api_key)
         
-        # Get user profile from current_user
-        user_profile = {
-            'user_type': current_user.get('user_type', 'farmer'),
-            'location': current_user.get('location'),
-            'preferred_language': current_user.get('preferred_language', 'en')
+        # ✅ RAG Service
+        embeddings_manager = EmbeddingsManager(gemini_api_key)  # fixed
+        vector_store = VectorStore()  # ⚠️ check if it requires params
+        retriever = DocumentRetriever(embeddings_manager, vector_store)
+        
+        # Chatbot Services  
+        response_generator = ResponseGenerator(
+            gemini_api_key,
+            retriever,
+            translator,
+            intent_classifier
+        )
+        context_manager = ConversationContextManager()
+        conversation_handler = ConversationHandler(response_generator, context_manager)
+        
+        # Store services
+        ai_services = {
+            'language_detector': language_detector,
+            'translator': translator,
+            'intent_classifier': intent_classifier,
+            'retriever': retriever,
+            'response_generator': response_generator,
+            'context_manager': context_manager,
+            'conversation_handler': conversation_handler
         }
         
-        # Add request context if provided
-        if request.context:
-            user_profile.update(request.context)
+        print("✅ All AI services initialized successfully")
+        
+    except Exception as e:
+        print(f"❌ Error initializing AI services: {str(e)}")
+        raise e
+
+
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy", 
+        "service": "Krishi Seva AI",
+        "services_loaded": len(ai_services),
+        "available_services": list(ai_services.keys())
+    }
+
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    try:
+        if not ai_services:
+            raise HTTPException(status_code=503, detail="AI services not initialized")
+        
+        conversation_handler = ai_services['conversation_handler']
         
         # Process the conversation
-        conversation_handler = ai_services['conversation_handler']
         result = await conversation_handler.handle_user_message(
             request.user_id, 
-            request.message,
-            user_profile
+            request.message, 
+            {'preferred_language': request.language}
         )
         
-        return ChatResponse(**result)
+        if not result['success']:
+            raise HTTPException(status_code=500, detail=result.get('error', 'Processing failed'))
+        
+        return ChatResponse(
+            success=result['success'],
+            response=result['response'],
+            intent=result['metadata']['intent'],
+            confidence=result['metadata']['confidence'],
+            language=result['metadata']['language_detected'],
+            suggestions=result['suggestions']
+        )
         
     except HTTPException:
         raise
     except Exception as e:
         print(f"Chat endpoint error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
-# Image analysis endpoint
-@app.post("/analyze-image")
-async def analyze_image(
-    file: UploadFile = File(...),
-    user_id: str = Form(...),
-    description: str = Form(""),
-    language: str = Form("en"),
-    current_user: dict = Depends(get_current_user)
-):
-    """Analyze uploaded crop images."""
-    try:
-        # Validate file
-        if not input_validator.validate_image_file(file):
-            raise HTTPException(status_code=400, detail="Invalid image file")
-        
-        # Rate limiting
-        if not security_manager.check_rate_limit(user_id):
-            raise HTTPException(status_code=429, detail="Rate limit exceeded")
-        
-        # Process image
-        image_processor = ai_services['image_processor']
-        file_content = await file.read()
-        
-        analysis_result = await image_processor.analyze_crop_image(
-            file_content, description, language
-        )
-        
-        # If analysis successful, also handle as a conversation
-        if analysis_result.get('success'):
-            query = f"Image analysis: {description}. Analysis results: {analysis_result.get('analysis', '')}"
-            
-            conversation_handler = ai_services['conversation_handler']
-            chat_result = await conversation_handler.handle_user_message(
-                user_id, query, {'user_type': current_user.get('user_type')}
-            )
-            
-            # Combine image analysis with chat response
-            return {
-                'success': True,
-                'image_analysis': analysis_result,
-                'ai_advice': chat_result['response'],
-                'metadata': chat_result['metadata']
-            }
-        
-        return analysis_result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Image analysis error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Image analysis failed")
 
-# Document upload for knowledge base
-@app.post("/upload-documents", response_model=DocumentUploadResponse)
-async def upload_documents(
-    files: List[UploadFile] = File(...),
-    current_user: dict = Depends(get_current_user)
-):
-    """Upload documents to knowledge base (admin only)."""
-    try:
-        # Check if user is admin
-        if current_user.get('user_type') != 'admin':
-            raise HTTPException(status_code=403, detail="Admin access required")
-        
-        document_processor = ai_services['document_processor']
-        embeddings_manager = ai_services['embeddings_manager']
-        vector_store = ai_services['vector_store']
-        
-        total_processed = 0
-        
-        for file in files:
-            if not input_validator.validate_document_file(file):
-                continue
-            
-            # Save file temporarily
-            temp_path = f"./temp/{file.filename}"
-            os.makedirs(os.path.dirname(temp_path), exist_ok=True)
-            
-            with open(temp_path, "wb") as f:
-                f.write(await file.read())
-            
-            # Process document
-            documents = document_processor.process_agricultural_document(temp_path)
-            
-            if documents:
-                # Generate embeddings
-                contents = [doc['content'] for doc in documents]
-                embeddings = await embeddings_manager.generate_batch_embeddings(contents)
-                
-                # Store in vector database
-                if vector_store.add_documents(documents, embeddings):
-                    total_processed += len(documents)
-            
-            # Clean up temp file
-            os.remove(temp_path)
-        
-        return DocumentUploadResponse(
-            success=True,
-            message=f"Successfully processed {total_processed} document chunks",
-            documents_processed=total_processed
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Document upload error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Document upload failed")
-
-# Get conversation history
 @app.get("/conversation/{user_id}")
-async def get_conversation_history(
-    user_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """Get user's conversation history."""
+async def get_conversation_history(user_id: str):
     try:
-        # Users can only access their own history, or admins can access any
-        if current_user.get('user_id') != user_id and current_user.get('user_type') != 'admin':
-            raise HTTPException(status_code=403, detail="Access denied")
+        if not ai_services:
+            raise HTTPException(status_code=503, detail="AI services not initialized")
         
         conversation_handler = ai_services['conversation_handler']
         summary = await conversation_handler.get_conversation_summary(user_id)
         
-        return summary
+        return {
+            "success": True,
+            "conversation_history": summary.get('recent_activity', []),
+            "total_messages": summary.get('total_messages', 0),
+            "summary": summary.get('summary', ''),
+            "main_topics": summary.get('main_topics', [])
+        }
         
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"Conversation history error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve conversation history")
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Translate text endpoint
+
 @app.post("/translate")
-async def translate_text(
-    text: str = Form(...),
-    from_lang: str = Form(...),
-    to_lang: str = Form(...),
-    context: str = Form("agricultural"),
-    current_user: dict = Depends(get_current_user)
+async def translate_endpoint(
+    text: str,
+    from_lang: str = "auto",
+    to_lang: str = "en",
+    context: str = "agricultural"
 ):
-    """Translate agricultural text."""
     try:
-        if not input_validator.validate_message(text):
-            raise HTTPException(status_code=400, detail="Invalid text content")
+        if not ai_services:
+            raise HTTPException(status_code=503, detail="AI services not initialized")
         
         translator = ai_services['translator']
-        result = await translator.translate_with_context(text, from_lang, to_lang, context)
+        
+        # Detect language if auto
+        if from_lang == "auto":
+            language_detector = ai_services['language_detector']
+            lang_info = language_detector.detect_language(text)
+            from_lang = lang_info['language']
+        
+        # Translate
+        translated_text = await translator.translate_with_context(text, from_lang, to_lang, context)
         
         return {
-            'success': True,
-            'original_text': text,
-            'translated_text': result,
-            'from_language': from_lang,
-            'to_language': to_lang
+            "success": True,
+            "original_text": text,
+            "translated_text": translated_text,
+            "from_language": from_lang,
+            "to_language": to_lang,
+            "context": context
         }
         
     except Exception as e:
         print(f"Translation error: {str(e)}")
-        raise HTTPException(status_code=500, detail="Translation failed")
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Run the FastAPI app
+
+@app.post("/classify-intent")
+async def classify_intent_endpoint(text: str, language: str = "en"):
+    try:
+        if not ai_services:
+            raise HTTPException(status_code=503, detail="AI services not initialized")
+        
+        intent_classifier = ai_services['intent_classifier']
+        
+        # Classify using rule-based approach
+        result = intent_classifier.classify_intent_rule_based(text)
+        
+        return {
+            "success": True,
+            "text": text,
+            "intent": result['primary_intent'],
+            "confidence": result['confidence'],
+            "method": result['method'],
+            "all_intents": result.get('all_intents', {})
+        }
+        
+    except Exception as e:
+        print(f"Intent classification error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/language/detect")
+async def detect_language_endpoint(text: str):
+    try:
+        if not ai_services:
+            raise HTTPException(status_code=503, detail="AI services not initialized")
+        
+        language_detector = ai_services['language_detector']
+        result = language_detector.detect_language(text)
+        
+        return {
+            "success": True,
+            "text": text,
+            "detected_language": result['language'],
+            "confidence": result['confidence'],
+            "is_mixed": language_detector.is_mixed_language(text)
+        }
+        
+    except Exception as e:
+        print(f"Language detection error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health/services")
+async def service_health_check():
+    health_status = {}
+    
+    for service_name, service in ai_services.items():
+        try:
+            if hasattr(service, '__class__'):
+                health_status[service_name] = {
+                    "status": "healthy",
+                    "type": service.__class__.__name__
+                }
+            else:
+                health_status[service_name] = {
+                    "status": "unknown",
+                    "type": "unknown"
+                }
+        except Exception as e:
+            health_status[service_name] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+    
+    return {
+        "overall_status": "healthy" if all(s.get("status") == "healthy" for s in health_status.values()) else "degraded",
+        "services": health_status,
+        "total_services": len(health_status)
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-        log_level="info"
-    )
+    print("🚀 Starting Krishi Seva AI Service...")
+    print("📊 Service will be available at: http://localhost:8000")
+    print("📚 API docs will be available at: http://localhost:8000/docs")
+    uvicorn.run(app, host="0.0.0.0", port=8000)

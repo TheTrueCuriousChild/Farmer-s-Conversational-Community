@@ -6,3 +6,4 @@ node_modules
 krishi_ai_env
 client/node_modules
 server/backend/node_modules
+pycache
