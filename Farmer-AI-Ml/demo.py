@@ -1,30 +1,38 @@
-# demo.py - Main demo script
-from inference.query_processor import FarmerQueryProcessor
+from inference.rag_processor import RAGQueryProcessor
 
 def main():
-    print("🌾 AI Farmer Advisory System - Demo")
-    print("=" * 50)
+    print("🌾 AI Farmer Advisory System - Multilingual + RAG")
+    print("=" * 60)
     
-    # Initialize the system
-    processor = FarmerQueryProcessor()
+    # Initialize the RAG system
+    processor = RAGQueryProcessor()
     
-    # Demo queries
+    # Demo queries in both English and Malayalam
     demo_queries = [
+        "How to treat leaf spot in paddy?",
+        "What fertilizer for banana plants?",
+        "How to control tomato leaf curl?",
         "എന്റെ നെല്ലിലെ ഇല പുള്ളി എങ്ങനെ ചികിത്സിക്കാം?",
         "വാഴയ്ക്ക് എന്ത് വളം ഉപയോഗിക്കണം?",
-        "ഇന്ന് മഴ ഉണ്ടാകുമോ?",
         "തക്കാളിയിലെ ഇലത്തുമ്പ് എങ്ങനെ നിയന്ത്രിക്കാം?"
     ]
     
-    print("\n🧪 Testing with demo queries:")
-    print("-" * 30)
+    print("\n🧪 Testing with multilingual queries + RAG:")
+    print("-" * 50)
     
     for i, query_text in enumerate(demo_queries, 1):
         print(f"\n{i}. Query: {query_text}")
         result = processor.process_query({"text": query_text})
-        print(f"   Intent: {result['intent']}")
-        print(f"   Response: {result['response']}")
-        print(f"   Confidence: {result['confidence']:.2f}")
+        
+        print(f"   Language: {result['language'].upper()}")
+        print(f"   Intent: {result['intent']} ({result['confidence']:.2f} confidence)")
+        print(f"   Response: {result['response']['response']}")
+        
+        if result['response']['follow_up']:
+            print(f"   Follow-up: {result['response']['follow_up']}")
+        
+        if result['response']['knowledge_used']:
+            print(f"   💡 Knowledge-based answer!")
 
 if __name__ == "__main__":
     main()
