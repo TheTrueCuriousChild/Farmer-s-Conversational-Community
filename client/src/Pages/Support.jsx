@@ -14,8 +14,10 @@ import {
   AlertCircle,
   Search
 } from "lucide-react";
+import { useLanguage } from "@/components/contexts/LanguageContext";
 
 export default function Support() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("faq");
 
   const faqs = [
@@ -120,8 +122,8 @@ export default function Support() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Support Center</h1>
-        <p className="text-gray-600">Get help and find answers to your questions</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('supportCenter')}</h1>
+        <p className="text-gray-600">{t('getHelpAndAnswers')}</p>
       </div>
 
       {/* Contact Options */}
@@ -129,32 +131,32 @@ export default function Support() {
         <Card className="text-center">
           <CardContent className="p-6">
             <Phone className="w-12 h-12 text-green-600 mx-auto mb-4" />
-            <h3 className="font-semibold mb-2">Phone Support</h3>
-            <p className="text-gray-600 mb-4">Get immediate help from our experts</p>
+            <h3 className="font-semibold mb-2">{t('phoneSupport')}</h3>
+            <p className="text-gray-600 mb-4">{t('getImmediateHelp')}</p>
             <p className="font-semibold text-green-600">1800-XXX-XXXX</p>
-            <p className="text-sm text-gray-500">24/7 Available</p>
+            <p className="text-sm text-gray-500">{t('available24x7')}</p>
           </CardContent>
         </Card>
 
         <Card className="text-center">
           <CardContent className="p-6">
             <Mail className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-            <h3 className="font-semibold mb-2">Email Support</h3>
-            <p className="text-gray-600 mb-4">Send us detailed queries</p>
+            <h3 className="font-semibold mb-2">{t('emailSupport')}</h3>
+            <p className="text-gray-600 mb-4">{t('sendDetailedQueries')}</p>
             <p className="font-semibold text-blue-600">support@krishiseva.com</p>
-            <p className="text-sm text-gray-500">Response within 24 hours</p>
+            <p className="text-sm text-gray-500">{t('responseWithin24h')}</p>
           </CardContent>
         </Card>
 
         <Card className="text-center">
           <CardContent className="p-6">
             <MessageCircle className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-            <h3 className="font-semibold mb-2">Live Chat</h3>
-            <p className="text-gray-600 mb-4">Chat with our support team</p>
+            <h3 className="font-semibold mb-2">{t('liveChat')}</h3>
+            <p className="text-gray-600 mb-4">{t('chatWithSupportTeam')}</p>
             <Button className="bg-purple-600 hover:bg-purple-700">
-              Start Chat
+              {t('startChat')}
             </Button>
-            <p className="text-sm text-gray-500 mt-2">9 AM - 6 PM IST</p>
+            <p className="text-sm text-gray-500 mt-2">{t('businessHours')}</p>
           </CardContent>
         </Card>
       </div>
@@ -166,21 +168,21 @@ export default function Support() {
           onClick={() => setActiveTab("faq")}
           className="px-6"
         >
-          FAQ
+          {t('faq')}
         </Button>
         <Button
           variant={activeTab === "tickets" ? "default" : "ghost"}
           onClick={() => setActiveTab("tickets")}
           className="px-6"
         >
-          My Tickets
+          {t('myTickets')}
         </Button>
         <Button
           variant={activeTab === "create" ? "default" : "ghost"}
           onClick={() => setActiveTab("create")}
           className="px-6"
         >
-          Create Ticket
+          {t('createTicket')}
         </Button>
       </div>
 
@@ -192,7 +194,7 @@ export default function Support() {
               <div className="relative">
                 <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                 <Input
-                  placeholder="Search frequently asked questions..."
+                  placeholder={t('searchFaq')}
                   className="pl-10"
                 />
               </div>
@@ -220,7 +222,7 @@ export default function Support() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle>My Support Tickets</CardTitle>
+              <CardTitle>{t('mySupportTickets')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -229,12 +231,12 @@ export default function Support() {
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <h3 className="font-semibold text-gray-900">{ticket.subject}</h3>
-                        <p className="text-sm text-gray-600">Ticket ID: {ticket.id}</p>
+                        <p className="text-sm text-gray-600">{t('ticketId')}: {ticket.id}</p>
                       </div>
                       <div className="flex gap-2">
                         <Badge className={getStatusColor(ticket.status)}>
                           {getStatusIcon(ticket.status)}
-                          <span className="ml-1">{ticket.status}</span>
+                          <span className="ml-1">{ticket.status === 'resolved' ? t('resolved') : ticket.status === 'open' ? t('open') : ticket.status}</span>
                         </Badge>
                         <Badge className={getPriorityColor(ticket.priority)}>
                           {ticket.priority}
@@ -242,8 +244,8 @@ export default function Support() {
                       </div>
                     </div>
                     <div className="flex justify-between text-sm text-gray-500">
-                      <span>Created: {ticket.created}</span>
-                      <span>Last updated: {ticket.lastUpdate}</span>
+                      <span>{t('created')}: {ticket.created}</span>
+                      <span>{t('lastUpdated')}: {ticket.lastUpdate}</span>
                     </div>
                   </div>
                 ))}
@@ -257,45 +259,45 @@ export default function Support() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle>Create Support Ticket</CardTitle>
+              <CardTitle>{t('createSupportTicket')}</CardTitle>
             </CardHeader>
             <CardContent>
               <form className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Subject</label>
-                  <Input placeholder="Brief description of your issue" />
+                  <label className="block text-sm font-medium mb-2">{t('subject')}</label>
+                  <Input placeholder={t('briefDescription')} />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
+                  <label className="block text-sm font-medium mb-2">{t('category')}</label>
                   <select className="w-full p-2 border border-gray-300 rounded-lg">
-                    <option value="">Select a category</option>
-                    <option value="technical">Technical Issue</option>
-                    <option value="billing">Billing</option>
-                    <option value="feature">Feature Request</option>
-                    <option value="general">General Inquiry</option>
+                    <option value="">{t('selectCategory')}</option>
+                    <option value="technical">{t('technicalIssue')}</option>
+                    <option value="billing">{t('billing')}</option>
+                    <option value="feature">{t('featureRequest')}</option>
+                    <option value="general">{t('generalInquiry')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Priority</label>
+                  <label className="block text-sm font-medium mb-2">{t('priority')}</label>
                   <select className="w-full p-2 border border-gray-300 rounded-lg">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="low">{t('low')}</option>
+                    <option value="medium">{t('medium')}</option>
+                    <option value="high">{t('high')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <label className="block text-sm font-medium mb-2">{t('description')}</label>
                   <Textarea 
-                    placeholder="Please describe your issue in detail..."
+                    placeholder={t('describeIssueDetail')}
                     className="h-32"
                   />
                 </div>
 
                 <Button className="w-full">
-                  Create Ticket
+                  {t('createTicket')}
                 </Button>
               </form>
             </CardContent>
