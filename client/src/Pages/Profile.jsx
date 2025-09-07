@@ -1,351 +1,247 @@
 import React, { useState, useEffect } from "react";
-import { User as UserIcon, Edit3, Save, MapPin, Phone, Calendar, Briefcase } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { User } from "@/entities/User";
-import { CropEntry } from "@/entities/CropEntry";
-import { motion } from "framer-motion";
+import { User as UserIcon, Edit, Loader2 } from "lucide-react";
 
-export default function Profile() {
+const translations = {
+  en: {
+    myProfile: "My Profile",
+    editProfile: "Edit Profile",
+    contactInfo: "Contact Information",
+    email: "Email Address",
+    phone: "Phone Number",
+    farmInfo: "Farm Information",
+    farmSize: "Farm Size",
+    mainCrops: "Main Crops",
+    farmingExp: "Farming Experience",
+    farmLocation: "Farm Location",
+    businessInfo: "Business Information",
+    businessType: "Business Type",
+    license: "License Number",
+    taxId: "Tax ID",
+    businessAddress: "Business Address",
+    workInfo: "Work Information",
+    workExp: "Work Experience",
+    dailyWage: "Daily Wage",
+    skills: "Skills",
+    availability: "Availability",
+    currentLocation: "Current Location",
+    adminInfo: "Administrative Information",
+    department: "Department",
+    adminLevel: "Admin Level",
+    responsibilities: "Responsibilities",
+    years: "years",
+    couldNotLoad: "Could not load profile. Please try again.",
+    preferredLanguage: "Preferred Language"
+  },
+  hi: {
+    myProfile: "मेरी प्रोफ़ाइल",
+    editProfile: "प्रोफ़ाइल संपादित करें",
+    contactInfo: "संपर्क जानकारी",
+    email: "ईमेल पता",
+    phone: "फ़ोन नंबर",
+    farmInfo: "खेत की जानकारी",
+    farmSize: "खेत का आकार",
+    mainCrops: "मुख्य फसलें",
+    farmingExp: "खेती का अनुभव",
+    farmLocation: "खेत का स्थान",
+    businessInfo: "व्यावसायिक जानकारी",
+    businessType: "व्यवसाय का प्रकार",
+    license: "लाइसेंस नंबर",
+    taxId: "टैक्स आईडी",
+    businessAddress: "व्यावसायिक पता",
+    workInfo: "कार्य जानकारी",
+    workExp: "कार्य अनुभव",
+    dailyWage: "दैनिक मजदूरी",
+    skills: "कौशल",
+    availability: "उपलब्धता",
+    currentLocation: "वर्तमान स्थान",
+    adminInfo: "प्रशासनिक जानकारी",
+    department: "विभाग",
+    adminLevel: "एडमिन स्तर",
+    responsibilities: "जिम्मेदारियाँ",
+    years: "वर्ष",
+    couldNotLoad: "प्रोफ़ाइल लोड नहीं हो सकी। कृपया पुनः प्रयास करें।",
+    preferredLanguage: "पसंदीदा भाषा"
+  },
+  ml: {
+    myProfile: "എൻ്റെ പ്രൊഫൈൽ",
+    editProfile: "പ്രൊഫൈൽ എഡിറ്റ് ചെയ്യുക",
+    contactInfo: "ബന്ധപ്പെടാനുള്ള വിവരങ്ങൾ",
+    email: "ഇമെയിൽ വിലാസം",
+    phone: "ഫോൺ നമ്പർ",
+    farmInfo: "ഫാം വിവരങ്ങൾ",
+    farmSize: "ഫാമിന്റെ വലുപ്പം",
+    mainCrops: "പ്രധാന വിളകൾ",
+    farmingExp: "കൃഷി പരിചയം",
+    farmLocation: "ഫാമിന്റെ സ്ഥാനം",
+    businessInfo: "ബിസിനസ്സ് വിവരങ്ങൾ",
+    businessType: "ബിസിനസ്സ് തരം",
+    license: "ലൈസൻസ് നമ്പർ",
+    taxId: "നികുതി ഐഡി",
+    businessAddress: "ബിസിനസ്സ് വിലാസം",
+    workInfo: "ജോലി വിവരങ്ങൾ",
+    workExp: "പ്രവൃത്തി പരിചയം",
+    dailyWage: "ദിവസ വേതനം",
+    skills: "കഴിവുകൾ",
+    availability: "ലഭ്യത",
+    currentLocation: "നിലവിലെ സ്ഥാനം",
+    adminInfo: "അഡ്മിനിസ്ട്രേറ്റീവ് വിവരങ്ങൾ",
+    department: "വകുപ്പ്",
+    adminLevel: "അഡ്മിൻ തലം",
+    responsibilities: "ഉത്തരവാദിത്തങ്ങൾ",
+    years: "വർഷം",
+    couldNotLoad: "പ്രൊഫൈൽ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല. ദയവായി വീണ്ടും ശ്രമിക്കുക.",
+    preferredLanguage: "മുൻഗണനാ ഭാഷ"
+  }
+};
+
+const DetailItem = ({ label, value }) => (
+  value ? (
+    <div>
+      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</h4>
+      <p className="text-gray-800 dark:text-gray-200">{value}</p>
+    </div>
+  ) : null
+);
+
+export default function Profile({ language = 'en', translations: pageTranslations }) {
   const [user, setUser] = useState(null);
-  const [crops, setCrops] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    phone_number: "",
-    date_of_birth: "",
-    gender: "",
-    address: "",
-    land_size: "",
-    location: "",
-    crops: []
-  });
+  
+  const t = translations[language];
 
   useEffect(() => {
-    loadUserData();
+    const fetchUser = () => {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        setUser(currentUser);
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
   }, []);
+  
+  const formatAddress = (address) => {
+      if (!address || !address.city) return null;
+      return `${address.street || ''}, ${address.city}, ${address.state}, ${address.country}, ${address.zip_code || ''}`.replace(/^, /, '').replace(/, ,/g, ',');
+  }
 
-  const loadUserData = async () => {
-    try {
-      const userData = await User.me();
-      setUser(userData);
-      setFormData({
-        phone_number: userData.phone_number || "",
-        date_of_birth: userData.date_of_birth || "",
-        gender: userData.gender || "",
-        address: userData.address || "",
-        land_size: userData.land_size?.toString() || "",
-        location: userData.location || "",
-        crops: userData.crops || []
-      });
-      
-      // Load user's crop entries
-      const userCrops = await CropEntry.filter({ farmer_id: userData.id });
-      setCrops(userCrops);
-    } catch (error) {
-      console.error("Error loading user data:", error);
+  const getLanguageName = (lang) => {
+    const names = { en: 'English', hi: 'हिंदी', ml: 'മലയാളം' };
+    return names[lang] || lang;
+  };
+
+  const renderRoleSpecificDetails = () => {
+    if (!user) return null;
+
+    switch (user.user_role) {
+      case 'farmer':
+        return (
+          <Card className="mt-4 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader><CardTitle className="dark:text-white">{t.farmInfo}</CardTitle></CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <DetailItem label={t.farmSize} value={user.farm_size} />
+              <DetailItem label={t.mainCrops} value={user.main_crops} />
+              <DetailItem label={t.farmingExp} value={user.farming_experience && `${user.farming_experience} ${t.years}`} />
+              <DetailItem label={t.farmLocation} value={formatAddress(user.farm_location)} />
+            </CardContent>
+          </Card>
+        );
+      case 'retailer':
+        return (
+          <Card className="mt-4 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader><CardTitle className="dark:text-white">{t.businessInfo}</CardTitle></CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <DetailItem label={t.businessType} value={user.business_type?.replace('_', ' ')} />
+              <DetailItem label={t.license} value={user.license_number} />
+              <DetailItem label={t.taxId} value={user.tax_id} />
+              <DetailItem label={t.businessAddress} value={formatAddress(user.business_address)} />
+            </CardContent>
+          </Card>
+        );
+      case 'labourer':
+        return (
+          <Card className="mt-4 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader><CardTitle className="dark:text-white">{t.workInfo}</CardTitle></CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <DetailItem label={t.workExp} value={user.work_experience && `${user.work_experience} ${t.years}`} />
+              <DetailItem label={t.dailyWage} value={user.daily_wage ? `₹${user.daily_wage}` : null} />
+              <DetailItem label={t.skills} value={user.skills} />
+              <DetailItem label={t.availability} value={user.availability} />
+              <DetailItem label={t.currentLocation} value={formatAddress(user.current_location)} />
+            </CardContent>
+          </Card>
+        );
+      case 'admin':
+        return (
+          <Card className="mt-4 dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader><CardTitle className="dark:text-white">{t.adminInfo}</CardTitle></CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <DetailItem label={t.department} value={user.department} />
+              <DetailItem label={t.adminLevel} value={user.admin_level} />
+              <DetailItem label={t.responsibilities} value={user.responsibilities} />
+            </CardContent>
+          </Card>
+        );
+      default:
+        return null;
     }
-    setLoading(false);
   };
-
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleCropsChange = (cropsString) => {
-    const cropsArray = cropsString.split(',').map(crop => crop.trim()).filter(crop => crop);
-    setFormData(prev => ({ ...prev, crops: cropsArray }));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const updateData = {
-        ...formData,
-        land_size: formData.land_size ? parseFloat(formData.land_size) : null
-      };
-      
-      await User.updateMyUserData(updateData);
-      setUser(prev => ({ ...prev, ...updateData }));
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Error updating profile:", error);
-    }
-    setSaving(false);
-  };
+  
+  const displayName = user?.farmer_name || user?.business_name || user?.labourer_name || user?.admin_name || user?.full_name;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading profile...</p>
-        </div>
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
+  
+  if (!user) {
+    return <div className="p-6 text-gray-900 dark:text-white">{t.couldNotLoad}</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="container mx-auto max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="text-center mb-8">
-            <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-4">
-              <UserIcon className="w-12 h-12 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {user?.full_name || "Farmer Profile"}
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">
-              Manage your farming profile and crop information
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Profile Information */}
-            <div className="lg:col-span-2">
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <UserIcon className="w-5 h-5 text-green-600" />
-                      Personal Information
-                    </CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                      disabled={saving}
-                    >
-                      {isEditing ? (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          {saving ? "Saving..." : "Save"}
-                        </>
-                      ) : (
-                        <>
-                          <Edit3 className="w-4 h-4 mr-2" />
-                          Edit
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="full_name">Full Name</Label>
-                      <Input
-                        id="full_name"
-                        value={user?.full_name || ""}
-                        disabled
-                        className="bg-gray-50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        value={user?.email || ""}
-                        disabled
-                        className="bg-gray-50"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={formData.phone_number}
-                        onChange={(e) => handleInputChange('phone_number', e.target.value)}
-                        disabled={!isEditing}
-                        placeholder="Enter phone number"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="dob">Date of Birth</Label>
-                      <Input
-                        id="dob"
-                        type="date"
-                        value={formData.date_of_birth}
-                        onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                        disabled={!isEditing}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="gender">Gender</Label>
-                      <Select 
-                        value={formData.gender} 
-                        onValueChange={(value) => handleInputChange('gender', value)}
-                        disabled={!isEditing}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="land_size">Land Size (acres)</Label>
-                      <Input
-                        id="land_size"
-                        type="number"
-                        value={formData.land_size}
-                        onChange={(e) => handleInputChange('land_size', e.target.value)}
-                        disabled={!isEditing}
-                        placeholder="Enter land size"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
-                    <Input
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      disabled={!isEditing}
-                      placeholder="Enter your location"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Full Address</Label>
-                    <Textarea
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      disabled={!isEditing}
-                      placeholder="Enter your full address"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="crops">Crops Grown (comma-separated)</Label>
-                    <Input
-                      id="crops"
-                      value={formData.crops.join(', ')}
-                      onChange={(e) => handleCropsChange(e.target.value)}
-                      disabled={!isEditing}
-                      placeholder="e.g., Rice, Wheat, Cotton"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Profile Stats & Summary */}
-            <div className="space-y-6">
-              {/* Profile Stats */}
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">Profile Stats</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                      <MapPin className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Location</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {user?.location || "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">User Type</p>
-                      <Badge className="capitalize">
-                        {user?.user_type || "farmer"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900 flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">Land Size</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {user?.land_size ? `${user.land_size} acres` : "Not specified"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Crops Summary */}
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">My Crops</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {user?.crops && user.crops.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {user.crops.map((crop, index) => (
-                        <Badge key={index} variant="secondary" className="bg-green-100 text-green-800">
-                          {crop}
-                        </Badge>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">
-                      No crops specified. Edit profile to add your crops.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Quick Actions */}
-              <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-lg">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full" variant="outline">
-                    Add Crop Entry
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    View Market Prices
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    Check Weather
-                  </Button>
-                  <Button className="w-full gradient-green text-white hover:opacity-90">
-                    Upload Produce
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </motion.div>
+    <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-950 min-h-full">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t.myProfile}</h1>
+        <Button disabled className="bg-green-600 hover:bg-green-700 text-white">
+          <Edit className="w-4 h-4 mr-2" />
+          {t.editProfile}
+        </Button>
       </div>
+
+      <Card className="dark:bg-gray-900 border-gray-200 dark:border-gray-700">
+        <CardHeader>
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 bg-green-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <UserIcon className="w-10 h-10 text-green-600 dark:text-green-300" />
+              </div>
+              <div>
+                  <h3 className="text-2xl font-bold dark:text-white">{displayName}</h3>
+                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 mt-1 capitalize">{user.user_role}</Badge>
+              </div>
+            </div>
+        </CardHeader>
+        <CardContent>
+          <Card className="dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <CardHeader><CardTitle className="dark:text-white">{t.contactInfo}</CardTitle></CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-4">
+              <DetailItem label={t.email} value={user.contact_email || user.email} />
+              <DetailItem label={t.phone} value={user.phone} />
+              <DetailItem label={t.preferredLanguage} value={getLanguageName(user.preferred_language)} />
+            </CardContent>
+          </Card>
+          
+          {renderRoleSpecificDetails()}
+        </CardContent>
+      </Card>
     </div>
   );
 }

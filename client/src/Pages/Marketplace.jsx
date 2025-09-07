@@ -1,263 +1,315 @@
-import React, { useState, useEffect } from "react";
-import { ShoppingCart, Clock, TrendingUp, MapPin, Calendar, Search, Filter } from "lucide-react";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MarketRate } from "@/entities/MarketRate";
-import { format } from "date-fns";
-import { motion } from "framer-motion";
+import { 
+  Search, 
+  Filter, 
+  ShoppingCart, 
+  Star, 
+  MapPin,
+  Phone,
+  User,
+  Package
+} from "lucide-react";
 
 export default function Marketplace() {
-  const [marketRates, setMarketRates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedLocation, setSelectedLocation] = useState("all");
+  const [activeTab, setActiveTab] = useState("buy");
 
-  useEffect(() => {
-    loadMarketRates();
-  }, []);
-
-  const loadMarketRates = async () => {
-    try {
-      const rates = await MarketRate.list('-date', 100);
-      setMarketRates(rates);
-    } catch (error) {
-      console.error("Error loading market rates:", error);
+  const products = [
+    {
+      id: 1,
+      name: "Organic Wheat",
+      price: 25,
+      unit: "per kg",
+      seller: "Ramesh Kumar",
+      location: "Punjab",
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop",
+      category: "Grains",
+      inStock: true
+    },
+    {
+      id: 2,
+      name: "Fresh Tomatoes",
+      price: 40,
+      unit: "per kg",
+      seller: "Priya Sharma",
+      location: "Maharashtra",
+      rating: 4.6,
+      image: "https://images.unsplash.com/photo-1546470427-227c46e8e6c3?w=300&h=200&fit=crop",
+      category: "Vegetables",
+      inStock: true
+    },
+    {
+      id: 3,
+      name: "Basmati Rice",
+      price: 80,
+      unit: "per kg",
+      seller: "Amit Singh",
+      location: "Haryana",
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=200&fit=crop",
+      category: "Grains",
+      inStock: true
+    },
+    {
+      id: 4,
+      name: "Organic Potatoes",
+      price: 30,
+      unit: "per kg",
+      seller: "Sunita Devi",
+      location: "Uttar Pradesh",
+      rating: 4.7,
+      image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&h=200&fit=crop",
+      category: "Vegetables",
+      inStock: false
+    },
+    {
+      id: 5,
+      name: "Fresh Onions",
+      price: 20,
+      unit: "per kg",
+      seller: "Rajesh Patel",
+      location: "Gujarat",
+      rating: 4.5,
+      image: "https://images.unsplash.com/photo-1508747703725-719777637510?w=300&h=200&fit=crop",
+      category: "Vegetables",
+      inStock: true
+    },
+    {
+      id: 6,
+      name: "Organic Lentils",
+      price: 120,
+      unit: "per kg",
+      seller: "Meera Roy",
+      location: "Rajasthan",
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300&h=200&fit=crop",
+      category: "Pulses",
+      inStock: true
     }
-    setLoading(false);
-  };
+  ];
 
-  const filteredRates = marketRates.filter(rate => {
-    const matchesSearch = rate.commodity.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         rate.market_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || rate.category === selectedCategory;
-    const matchesLocation = selectedLocation === "all" || rate.location === selectedLocation;
-    
-    return matchesSearch && matchesCategory && matchesLocation;
-  });
+  const categories = ["All", "Grains", "Vegetables", "Fruits", "Pulses", "Spices"];
 
-  const uniqueLocations = [...new Set(marketRates.map(rate => rate.location))];
-  
-  const categoryColors = {
-    rice: "bg-yellow-100 text-yellow-800",
-    vegetables: "bg-green-100 text-green-800", 
-    fruits: "bg-red-100 text-red-800",
-    grains: "bg-amber-100 text-amber-800",
-    spices: "bg-orange-100 text-orange-800"
-  };
-
-  const getPriceChangeIcon = () => {
-    return <TrendingUp className="w-4 h-4 text-green-600" />;
-  };
+  const myListings = [
+    {
+      id: 1,
+      name: "Fresh Carrots",
+      price: 35,
+      unit: "per kg",
+      views: 145,
+      inquiries: 12,
+      status: "active"
+    },
+    {
+      id: 2,
+      name: "Organic Spinach",
+      price: 45,
+      unit: "per kg",
+      views: 89,
+      inquiries: 6,
+      status: "active"
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="container mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketplace</h1>
+        <p className="text-gray-600">Buy and sell agricultural products directly with farmers</p>
+      </div>
+
+      {/* Tab Navigation */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+        <Button
+          variant={activeTab === "buy" ? "default" : "ghost"}
+          onClick={() => setActiveTab("buy")}
+          className="px-6"
         >
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Market Rates & Trading
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Live market prices, timings, and trends for better trading decisions
-            </p>
-          </div>
+          Buy Products
+        </Button>
+        <Button
+          variant={activeTab === "sell" ? "default" : "ghost"}
+          onClick={() => setActiveTab("sell")}
+          className="px-6"
+        >
+          My Listings
+        </Button>
+      </div>
 
-          {/* Market Overview Cards */}
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-100 text-sm">Active Markets</p>
-                    <p className="text-2xl font-bold">{uniqueLocations.length}</p>
-                  </div>
-                  <ShoppingCart className="w-8 h-8 text-green-200" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-100 text-sm">Commodities</p>
-                    <p className="text-2xl font-bold">{[...new Set(marketRates.map(r => r.commodity))].length}</p>
-                  </div>
-                  <Clock className="w-8 h-8 text-blue-200" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-orange-100 text-sm">Avg Price</p>
-                    <p className="text-2xl font-bold">₹{Math.round(marketRates.reduce((sum, r) => sum + r.modal_price, 0) / marketRates.length || 0)}</p>
-                  </div>
-                  <TrendingUp className="w-8 h-8 text-orange-200" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-100 text-sm">Today's Updates</p>
-                    <p className="text-2xl font-bold">{marketRates.filter(r => format(new Date(r.date), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')).length}</p>
-                  </div>
-                  <Calendar className="w-8 h-8 text-purple-200" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filters */}
-          <Card className="mb-6 shadow-lg">
+      {activeTab === "buy" ? (
+        <>
+          {/* Search and Filter */}
+          <Card>
             <CardContent className="p-6">
-              <div className="grid md:grid-cols-4 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <Input
-                    placeholder="Search commodity or market..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search products..."
                     className="pl-10"
                   />
                 </div>
-                
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="rice">Rice</SelectItem>
-                    <SelectItem value="vegetables">Vegetables</SelectItem>
-                    <SelectItem value="fruits">Fruits</SelectItem>
-                    <SelectItem value="grains">Grains</SelectItem>
-                    <SelectItem value="spices">Spices</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Locations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Locations</SelectItem>
-                    {uniqueLocations.map(location => (
-                      <SelectItem key={location} value={location}>{location}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Filter className="w-4 h-4" />
-                  Reset Filters
-                </Button>
+                <div className="flex gap-2 items-center">
+                  <Filter className="w-4 h-4 text-gray-500" />
+                  {categories.map((category, index) => (
+                    <Button
+                      key={index}
+                      variant={index === 0 ? "default" : "outline"}
+                      size="sm"
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Market Rates Table */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-                Live Market Rates
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                  <p className="text-gray-600 dark:text-gray-300">Loading market data...</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <div className="space-y-4">
-                    {filteredRates.map((rate, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <div>
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                                  {rate.commodity}
-                                </h3>
-                                <Badge className={categoryColors[rate.category] || "bg-gray-100 text-gray-800"}>
-                                  {rate.category}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                <div className="flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" />
-                                  {rate.market_name}, {rate.location}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {rate.opening_time} - {rate.closing_time}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-3 h-3" />
-                                  {format(new Date(rate.date), "MMM d, yyyy")}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="text-right">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-2xl font-bold text-green-600">
-                                ₹{rate.modal_price}
-                              </span>
-                              {getPriceChangeIcon()}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              Range: ₹{rate.min_price} - ₹{rate.max_price} per kg
-                            </div>
-                          </div>
-                        </div>
-
-                        {rate.variety && (
-                          <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                            <span className="font-medium">Variety:</span> {rate.variety}
-                          </div>
-                        )}
-                      </motion.div>
-                    ))}
-                  </div>
-                  
-                  {filteredRates.length === 0 && !loading && (
-                    <div className="text-center py-12">
-                      <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500 dark:text-gray-400">
-                        No market data found for your search criteria
-                      </p>
+          {/* Products Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <Card key={product.id} className="hover:shadow-lg transition-shadow">
+                <div className="relative">
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-t-lg"
+                  />
+                  {!product.inStock && (
+                    <div className="absolute top-4 left-4">
+                      <Badge variant="destructive">Out of Stock</Badge>
                     </div>
                   )}
+                  <div className="absolute top-4 right-4">
+                    <Badge className="bg-green-100 text-green-800">
+                      {product.category}
+                    </Badge>
+                  </div>
                 </div>
-              )}
+                
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-center">
+                    <span>{product.name}</span>
+                    <span className="text-green-600 font-bold">₹{product.price} {product.unit}</span>
+                  </CardTitle>
+                </CardHeader>
+                
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center text-gray-600">
+                      <User className="w-4 h-4 mr-1" />
+                      {product.seller}
+                    </div>
+                    <div className="flex items-center text-yellow-600">
+                      <Star className="w-4 h-4 mr-1 fill-current" />
+                      {product.rating}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <MapPin className="w-4 h-4 mr-1" />
+                    {product.location}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      className="flex-1" 
+                      disabled={!product.inStock}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                    </Button>
+                    <Button variant="outline" size="icon">
+                      <Phone className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Sell Section */}
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-900">My Product Listings</h2>
+            <Button>
+              <Package className="w-4 h-4 mr-2" />
+              Add New Product
+            </Button>
+          </div>
+
+          {/* My Listings */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {myListings.map((listing) => (
+              <Card key={listing.id}>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900">{listing.name}</h3>
+                      <p className="text-lg text-green-600 font-bold">₹{listing.price} {listing.unit}</p>
+                    </div>
+                    <Badge className="bg-green-100 text-green-800">
+                      {listing.status}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{listing.views}</div>
+                      <div className="text-sm text-gray-600">Views</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{listing.inquiries}</div>
+                      <div className="text-sm text-gray-600">Inquiries</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1">
+                      Edit Listing
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      View Analytics
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Quick Stats */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales Overview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">2</div>
+                  <div className="text-gray-600">Active Listings</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600">234</div>
+                  <div className="text-gray-600">Total Views</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-600">18</div>
+                  <div className="text-gray-600">Inquiries</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-600">₹15,400</div>
+                  <div className="text-gray-600">Revenue This Month</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
-        </motion.div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

@@ -1,411 +1,298 @@
-
 import React, { useState, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import {
-  Leaf, Search, Sun, Moon, Globe, Menu, X,
-  Home, MessageSquare, Camera, CloudRain, BookOpen,
-  ShoppingCart, User, FileText, HelpCircle, Bell
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  LayoutDashboard,
+  Home,
+  Leaf,
+  GraduationCap,
+  Calendar,
+  Building2,
+  ShoppingCart,
+  User as UserIcon,
+  HardHat,
+  HelpCircle,
+  Cloud,
+  Phone,
+  Bug,
+  Menu,
+  Sun,
+  Moon,
+  MessageCircle,
+  Image as ImageIcon,
+  Users,
+  Globe } from
+"lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { User as UserEntity } from "@/entities/User";
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarProvider,
+  SidebarTrigger } from
+"@/components/ui/sidebar";
 
-const languages = {
-  english: {
+const translations = {
+  en: {
     home: "Home",
-    community: "Community",
-    diseaseChecker: "Disease Checker",
-    weather: "Weather",
-    education: "Education",
-    marketplace: "Marketplace",
+    dashboard: "Dashboard",
     profile: "Profile",
-    schemes: "Schemes",
+    chatbot: "AI Assistant",
+    community: "Community",
+    farmPlanning: "Farm Planning",
+    diseaseDetection: "Disease Detection",
+    produceGallery: "Produce Gallery",
+    education: "Education",
+    weather: "Weather",
+    marketplace: "Marketplace",
+    government: "Government Schemes",
+    farmers: "Farmers",
+    retailers: "Retailers",
+    labourers: "Labourers",
     support: "Support",
-    login: "Login",
-    signup: "Create Account",
-    searchPlaceholder: "Search crops, diseases, weather...",
-    lightMode: "Light Mode",
-    darkMode: "Dark Mode"
+    contactUs: "Contact Us",
+    krishiSeva: "Krishi Seva",
+    smartAgriculture: "Smart Agriculture",
+    selectLanguage: "Language"
   },
-  hindi: {
+  hi: {
     home: "होम",
-    community: "समुदाय",
-    diseaseChecker: "रोग जांचकर्ता",
-    weather: "मौसम",
-    education: "शिक्षा",
-    marketplace: "बाज़ार",
+    dashboard: "डैशबोर्ड",
     profile: "प्रोफाइल",
-    schemes: "योजनाएं",
+    chatbot: "एआई सहायक",
+    community: "समुदाय",
+    farmPlanning: "कृषि योजना",
+    diseaseDetection: "रोग पहचान",
+    produceGallery: "उत्पादन गैलरी",
+    education: "शिक्षा",
+    weather: "मौसम",
+    marketplace: "बाजार",
+    government: "सरकारी योजनाएं",
+    farmers: "किसान",
+    retailers: "खुदरा विक्रेता",
+    labourers: "मजदूर",
     support: "सहायता",
-    login: "लॉगिन",
-    signup: "खाता बनाएं",
-    searchPlaceholder: "फसल, रोग, मौसम खोजें...",
-    lightMode: "लाइट मोड",
-    darkMode: "डार्क मोड"
+    contactUs: "संपर्क करें",
+    krishiSeva: "कृषि सेवा",
+    smartAgriculture: "स्मार्ट कृषि",
+    selectLanguage: "भाषा"
   },
-  malayalam: {
+  ml: {
     home: "ഹോം",
-    community: "കമ്മ്യൂണിറ്റി",
-    diseaseChecker: "രോഗ പരിശോധന",
-    weather: "കാലാവസ്ഥ",
-    education: "വിദ്യാഭ്യാസം",
-    marketplace: "മാർക്കറ്റ്",
+    dashboard: "ഡാഷ്ബോർഡ്",
     profile: "പ്രൊഫൈൽ",
-    schemes: "പദ്ധതികൾ",
+    chatbot: "AI സഹായി",
+    community: "കമ്മ്യൂണിറ്റി",
+    farmPlanning: "കാർഷിക ആസൂത്രണം",
+    diseaseDetection: "രോഗ കണ്ടെത്തൽ",
+    produceGallery: "ഉൽപ്പന്ന ഗാലറി",
+    education: "വിദ്യാഭ്യാസം",
+    weather: "കാലാവസ്ഥ",
+    marketplace: "മാർക്കറ്റ്പ്ലേസ്",
+    government: "സർക്കാർ പദ്ധതികൾ",
+    farmers: "കർഷകർ",
+    retailers: "റീട്ടെയിലർമാർ",
+    labourers: "തൊഴിലാളികൾ",
     support: "പിന്തുണ",
-    login: "ലോഗിൻ",
-    signup: "അക്കൗണ്ട് സൃഷ്ടിക്കുക",
-    searchPlaceholder: "വിളകൾ, രോഗങ്ങൾ, കാലാവസ്ഥ തിരയുക...",
-    lightMode: "ലൈറ്റ് മോഡ്",
-    darkMode: "ഡാർക്ക് മോഡ്"
+    contactUs: "ബന്ധപ്പെടുക",
+    krishiSeva: "കൃഷി സേവ",
+    smartAgriculture: "സ്മാർട് അഗ്രിക്കൾച്ചർ",
+    selectLanguage: "ഭാഷ"
   }
 };
 
-export default function Layout({ children, currentPageName }) {
-  const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("english");
-  const [user, setUser] = useState(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+const allNavItems = [
+{ title: "home", url: createPageUrl("Home"), icon: Home, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "dashboard", url: createPageUrl("Dashboard"), icon: LayoutDashboard, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "profile", url: createPageUrl("Profile"), icon: UserIcon, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "chatbot", url: createPageUrl("Chatbot"), icon: MessageCircle, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "community", url: createPageUrl("Community"), icon: Users, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "farmPlanning", url: createPageUrl("FarmPlanning"), icon: Calendar, roles: ['farmer'] },
+{ title: "diseaseDetection", url: createPageUrl("Disease"), icon: Bug, roles: ['farmer'] },
+{ title: "produceGallery", url: createPageUrl("ImageGallery"), icon: ImageIcon, roles: ['farmer'] },
+{ title: "education", url: createPageUrl("Education"), icon: GraduationCap, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "weather", url: createPageUrl("Weather"), icon: Cloud, roles: ['farmer', 'labourer'] },
+{ title: "marketplace", url: createPageUrl("Marketplace"), icon: ShoppingCart, roles: ['farmer', 'retailer'] },
+{ title: "government", url: createPageUrl("Government"), icon: Building2, roles: ['farmer'] },
+{ title: "farmers", url: createPageUrl("FarmerPage"), icon: Leaf, roles: ['retailer', 'labourer', 'admin'] },
+{ title: "retailers", url: createPageUrl("RetailerPage"), icon: ShoppingCart, roles: ['farmer', 'admin'] },
+{ title: "labourers", url: createPageUrl("LabourerPage"), icon: HardHat, roles: ['farmer', 'admin'] },
+{ title: "support", url: createPageUrl("Support"), icon: HelpCircle, roles: ['farmer', 'retailer', 'labourer', 'admin'] },
+{ title: "contactUs", url: createPageUrl("ContactUs"), icon: Phone, roles: ['farmer', 'retailer', 'labourer', 'admin'] }];
 
-  const t = languages[language];
+
+export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+  const [theme, setTheme] = useState('light');
+  const [user, setUser] = useState(null);
+  const [navigationItems, setNavigationItems] = useState([]);
+  const [language, setLanguage] = useState('en');
+
+  const t = translations[language];
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const userData = await UserEntity.me();
-        setUser(userData);
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+  }, [theme]);
 
-        // Redirect new users to complete their profile
-        if (!userData.user_type && currentPageName !== 'CompleteProfile') {
-          navigate(createPageUrl("CompleteProfile"));
+  useEffect(() => {
+    if (location.pathname.includes(createPageUrl('Registration'))) {
+      return;
+    }
+
+    const fetchUserAndSetNav = async () => {
+      try {
+        const currentUserStr = localStorage.getItem('currentUser');
+        if (!currentUserStr) {
+          window.location.href = createPageUrl('Registration');
+          return;
+        }
+        const currentUser = JSON.parse(currentUserStr);
+        setUser(currentUser);
+
+        // Set language from user preference
+        if (currentUser.preferred_language) {
+          setLanguage(currentUser.preferred_language);
         }
 
-        if (userData.language_preference) {
-          setLanguage(userData.language_preference);
+        if (currentUser && currentUser.user_role) {
+          const filteredNav = allNavItems.filter((item) => item.roles.includes(currentUser.user_role));
+          setNavigationItems(filteredNav);
+        } else {
+          window.location.href = createPageUrl('Registration');
         }
       } catch (error) {
-        setUser(null);
+        console.log("User data parsing error or not logged in, redirecting to registration.");
+        window.location.href = createPageUrl('Registration');
       }
     };
+    fetchUserAndSetNav();
+  }, [location.pathname]);
 
-    loadUser();
-
-    const savedTheme = localStorage.getItem('krishiseva-theme');
-    const savedLanguage = localStorage.getItem('krishiseva-language');
-
-    if (savedTheme === 'dark') {
-      setDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    }
-
-    if (savedLanguage && languages[savedLanguage]) setLanguage(savedLanguage);
-  }, [currentPageName, navigate]);
-
-  const handleLogin = () => {
-    UserEntity.login();
+  const toggleTheme = () => {
+    setTheme((prevTheme) => prevTheme === 'light' ? 'dark' : 'light');
   };
 
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-
-    if (newMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('krishiseva-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('krishiseva-theme', 'light');
-    }
-  };
-
-  const handleLanguageChange = async (newLanguage) => {
+  const handleLanguageChange = (newLanguage) => {
     setLanguage(newLanguage);
-    localStorage.setItem('krishiseva-language', newLanguage);
-
+    // Update user's language preference
     if (user) {
-      try {
-        await UserEntity.updateMyUserData({ language_preference: newLanguage });
-      } catch (error) {
-        console.log("Could not save language preference");
-      }
+      const updatedUser = { ...user, preferred_language: newLanguage };
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      setUser(updatedUser);
     }
   };
 
-  const navigationItems = [
-    { name: t.home, path: "Home", icon: Home },
-    { name: t.community, path: "Community", icon: MessageSquare },
-    { name: t.diseaseChecker, path: "DiseaseChecker", icon: Camera },
-    { name: t.weather, path: "Weather", icon: CloudRain },
-    { name: t.education, path: "Education", icon: BookOpen },
-    { name: t.marketplace, path: "Marketplace", icon: ShoppingCart },
-    { name: t.schemes, path: "GovernmentSchemes", icon: Bell },
-    { name: t.support, path: "Support", icon: HelpCircle },
-  ];
+  const getUserDisplayName = () => {
+    if (!user) return "Guest";
+    return user.farmer_name || user.business_name || user.labourer_name || user.admin_name || user.full_name || "User";
+  };
+
+  const getUserRoleDisplayName = () => {
+    if (!user || !user.user_role) return "";
+    return user.user_role.charAt(0).toUpperCase() + user.user_role.slice(1);
+  };
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
-      <style>{`
-        :root {
-          --primary-green: #22c55e;
-          --primary-green-dark: #16a34a;
-          --secondary-green: #dcfce7;
-          --accent-green: #bbf7d0;
-        }
-
-        .dark {
-          --primary-green: #4ade80;
-          --primary-green-dark: #22c55e;
-          --secondary-green: #052e16;
-          --accent-green: #14532d;
-        }
-
-        .gradient-green {
-          background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-green-dark) 100%);
-        }
-
-        .gradient-green-subtle {
-          background: linear-gradient(135deg, var(--secondary-green) 0%, var(--accent-green) 100%);
-        }
-      `}</style>
-
-      {/* Header */}
-      <header className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
-        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-green-100'
-      }`}>
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo and Brand */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full gradient-green flex items-center justify-center">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-gray-50 dark:bg-gray-900">
+        <Sidebar className="border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+          <SidebarHeader className="border-b border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-blue-600 rounded-lg flex items-center justify-center">
                 <Leaf className="w-6 h-6 text-white" />
               </div>
-              <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                KrishiSeva
-              </h1>
-            </div>
-
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <div className="relative w-full">
-                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-500'
-                }`} />
-                <Input
-                  placeholder={t.searchPlaceholder}
-                  className={`pl-10 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200'}`}
-                />
+              <div>
+                <h2 className="font-bold text-gray-900 dark:text-gray-100 text-lg">{t.krishiSeva}</h2>
+                <p className="text-xs text-gray-600 dark:text-gray-400">{t.smartAgriculture}</p>
               </div>
             </div>
-
-            {/* Controls */}
-            <div className="flex items-center gap-4">
-              {/* Language Selector */}
+            
+            {/* Language Selector */}
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-gray-600 dark:text-gray-400" />
               <Select value={language} onValueChange={handleLanguageChange}>
-                <SelectTrigger className={`w-32 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'}`}>
-                  <Globe className="w-4 h-4 mr-2" />
+                <SelectTrigger className="bg-lime-600 text-slate-50 px-3 py-2 text-sm flex h-10 items-center justify-between rounded-md border ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 w-full dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="hindi">हिन्दी</SelectItem>
-                  <SelectItem value="malayalam">മലയാളം</SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="hi">हिंदी</SelectItem>
+                  <SelectItem value="ml">മലയാളം</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </SidebarHeader>
+          
+          <SidebarContent className="bg-slate-900 text-green-500 p-2 flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden">
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navigationItems.map((item) =>
+                  <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                      asChild
+                      className={`hover:bg-green-50 dark:hover:bg-gray-800 hover:text-green-700 dark:hover:text-green-300 transition-colors duration-200 rounded-lg mb-1 ${
+                      location.pathname === item.url ? 'bg-green-100 dark:bg-gray-800 text-green-700 dark:text-green-300 font-medium' : 'text-gray-700 dark:text-gray-300'}`
+                      }>
 
-              {/* Theme Toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleDarkMode}
-                className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}
-              >
-                {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                        <Link to={item.url} className="flex items-center gap-3 px-3 py-2 w-full">
+                          <item.icon className="w-4 h-4" />
+                          <span>{t[item.title]}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </SidebarContent>
+
+          <SidebarFooter className="border-t border-gray-200 dark:border-gray-700 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-green-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                  <UserIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 dark:text-gray-100 text-sm truncate">{getUserDisplayName()}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{getUserRoleDisplayName()}</p>
+                </div>
+              </div>
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
               </Button>
-
-              {/* Profile or Login */}
-              {user ? (
-                <Link to={createPageUrl("Profile")}>
-                  <Button variant="ghost" size="icon" className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
-                    <User className="w-5 h-5" />
-                  </Button>
-                </Link>
-              ) : (
-                <div className="hidden md:flex gap-2">
-                  <Button variant="ghost" onClick={handleLogin}>
-                    {t.login}
-                  </Button>
-                  <Button className="gradient-green text-white hover:opacity-90" onClick={handleLogin}>
-                      {t.signup}
-                  </Button>
-                </div>
-              )}
-
-              {/* Mobile Menu */}
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
-                    <Menu className="w-5 h-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className={darkMode ? 'bg-gray-800' : 'bg-white'}>
-                  <SheetHeader>
-                    <SheetTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      <Leaf className="w-5 h-5 text-green-500" />
-                      KrishiSeva
-                    </SheetTitle>
-                  </SheetHeader>
-                  <nav className="mt-8 space-y-4">
-                    {navigationItems.map((item) => (
-                      <Link
-                        key={item.path}
-                        to={createPageUrl(item.path)}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
-                          location.pathname === createPageUrl(item.path)
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                            : darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'
-                        }`}
-                      >
-                        <item.icon className="w-5 h-5" />
-                        {item.name}
-                      </Link>
-                    ))}
-                    {!user && (
-                      <div className="pt-4 space-y-2">
-                        <Button className="w-full" variant="ghost" onClick={() => { handleLogin(); setMobileMenuOpen(false); }}>
-                          {t.login}
-                        </Button>
-                        <Button className="w-full gradient-green text-white" onClick={() => { handleLogin(); setMobileMenuOpen(false); }}>
-                          {t.signup}
-                        </Button>
-                      </div>
-                    )}
-                  </nav>
-                </SheetContent>
-              </Sheet>
             </div>
-          </div>
-        </div>
+          </SidebarFooter>
+        </Sidebar>
 
-        {/* Navigation - Desktop */}
-        <div className="hidden md:block border-t border-gray-100 dark:border-gray-700">
-          <div className="container mx-auto px-4">
-            <nav className="flex items-center space-x-1">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={createPageUrl(item.path)}
-                  className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
-                    location.pathname === createPageUrl(item.path)
-                      ? 'text-green-700 border-b-2 border-green-500'
-                      : darkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
-                  }`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.name}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1">
-        {children}
-      </main>
-
-      {/* Footer */}
-      <footer className={`mt-20 border-t transition-colors duration-300 ${
-        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-      }`}>
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full gradient-green flex items-center justify-center">
-                  <Leaf className="w-4 h-4 text-white" />
-                </div>
-                <h3 className={`font-bold text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  KrishiSeva
-                </h3>
+        <main className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+          <header className="bg-white dark:bg-gray-900 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 px-6 py-4 md:hidden">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors duration-200" />
+                <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{currentPageName || t.krishiSeva}</h1>
               </div>
-              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Empowering farmers with technology for sustainable agriculture and better livelihoods.
-              </p>
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              </Button>
             </div>
+          </header>
 
-            <div>
-              <h4 className={`font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Features
-              </h4>
-              <div className="space-y-2">
-                <Link to={createPageUrl("DiseaseChecker")} className={`block text-sm hover:text-green-600 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Disease Detection
-                </Link>
-                <Link to={createPageUrl("Weather")} className={`block text-sm hover:text-green-600 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Weather Forecast
-                </Link>
-                <Link to={createPageUrl("Marketplace")} className={`block text-sm hover:text-green-600 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Marketplace
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h4 className={`font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Support
-              </h4>
-              <div className="space-y-2">
-                <Link to={createPageUrl("Support")} className={`block text-sm hover:text-green-600 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Help Center
-                </Link>
-                <Link to={createPageUrl("Community")} className={`block text-sm hover:text-green-600 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  Community
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h4 className={`font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                Contact
-              </h4>
-              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                support@krishiseva.com
-              </p>
-              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                +91 9876543210
-              </p>
-            </div>
+          <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
+            {React.cloneElement(children, { language, translations: translations[language] })}
           </div>
+        </main>
+      </div>
+    </SidebarProvider>);
 
-          <div className={`mt-8 pt-8 border-t text-center text-sm ${
-            darkMode ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-600'
-          }`}>
-            <p>&copy; 2024 KrishiSeva. All rights reserved. Made with ❤️ for farmers.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
 }

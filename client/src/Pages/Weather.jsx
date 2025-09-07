@@ -1,255 +1,215 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Cloud, Sun, CloudRain, Wind, Droplets, Thermometer, Calendar } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { InvokeLLM } from "@/integrations/Core";
-import { User } from "@/entities/User";
-import { format, addDays } from "date-fns";
-import { motion } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { 
+  Cloud, 
+  Sun, 
+  CloudRain, 
+  Wind, 
+  Thermometer,
+  Droplets,
+  Eye,
+  MapPin
+} from "lucide-react";
 
 export default function Weather() {
-  const [weather, setWeather] = useState(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [forecast, setForecast] = useState([]);
+  const [location, setLocation] = useState("Delhi, India");
+  const [currentWeather, setCurrentWeather] = useState({
+    temperature: 28,
+    condition: "Partly Cloudy",
+    humidity: 65,
+    windSpeed: 12,
+    visibility: 10,
+    uvIndex: 6,
+    feelsLike: 31
+  });
 
-  const loadUserAndWeather = useCallback(async () => {
-    try {
-      // Load user data
-      const userData = await User.me();
-      setUser(userData);
-      
-      // Get weather data for user's location
-      if (userData?.location) {
-        const weatherResponse = await InvokeLLM({
-          prompt: `Get current weather information and 7-day forecast for ${userData.location}, India. Include temperature, humidity, wind speed, precipitation, and weather conditions. Also provide farming advice based on current weather.`,
-          add_context_from_internet: true,
-          response_json_schema: {
-            type: "object",
-            properties: {
-              current: {
-                type: "object",
-                properties: {
-                  temperature: { type: "number" },
-                  humidity: { type: "number" },
-                  wind_speed: { type: "number" },
-                  precipitation: { type: "number" },
-                  condition: { type: "string" },
-                  feels_like: { type: "number" }
-                }
-              },
-              forecast: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    date: { type: "string" },
-                    high_temp: { type: "number" },
-                    low_temp: { type: "number" },
-                    condition: { type: "string" },
-                    precipitation: { type: "number" }
-                  }
-                }
-              },
-              farming_advice: { type: "string" }
-            }
-          }
-        });
-        
-        setWeather(weatherResponse);
-        setForecast(weatherResponse.forecast || []);
-      }
-    } catch (error) {
-      console.error("Error loading weather data:", error);
-      // Set dummy data if API fails
-      setWeather({
-        current: {
-          temperature: 25,
-          humidity: 65,
-          wind_speed: 10,
-          precipitation: 0,
-          condition: "Partly Cloudy",
-          feels_like: 28
-        },
-        farming_advice: "Good weather for most farming activities. Consider watering crops in the evening."
-      });
-      setForecast(generateDummyForecast());
+  const forecast = [
+    { day: "Today", high: 32, low: 24, condition: "Sunny", icon: Sun },
+    { day: "Tomorrow", high: 29, low: 22, condition: "Cloudy", icon: Cloud },
+    { day: "Wednesday", high: 26, low: 20, condition: "Rainy", icon: CloudRain },
+    { day: "Thursday", high: 28, low: 21, condition: "Partly Cloudy", icon: Cloud },
+    { day: "Friday", high: 31, low: 23, condition: "Sunny", icon: Sun },
+    { day: "Saturday", high: 30, low: 22, condition: "Partly Cloudy", icon: Cloud },
+    { day: "Sunday", high: 27, low: 19, condition: "Rainy", icon: CloudRain }
+  ];
+
+  const farmingAdvice = [
+    {
+      title: "Irrigation Recommendation",
+      advice: "Light irrigation recommended today due to low humidity levels.",
+      priority: "medium"
+    },
+    {
+      title: "Pest Alert",
+      advice: "Weather conditions favorable for pest activity. Monitor crops closely.",
+      priority: "high"
+    },
+    {
+      title: "Harvest Window",
+      advice: "Good weather conditions for harvesting over the next 3 days.",
+      priority: "low"
+    },
+    {
+      title: "Fertilizer Application",
+      advice: "Avoid fertilizer application - rain expected in 2 days.",
+      priority: "medium"
     }
-    setLoading(false);
-  }, []);
+  ];
 
-  useEffect(() => {
-    loadUserAndWeather();
-  }, [loadUserAndWeather]);
-
-  const generateDummyForecast = () => {
-    const conditions = ["Sunny", "Partly Cloudy", "Cloudy", "Light Rain"];
-    return Array.from({ length: 7 }, (_, i) => ({
-      date: format(addDays(new Date(), i), "yyyy-MM-dd"),
-      high_temp: Math.round(Math.random() * 10 + 25),
-      low_temp: Math.round(Math.random() * 8 + 18),
-      condition: conditions[Math.floor(Math.random() * conditions.length)],
-      precipitation: Math.round(Math.random() * 20)
-    }));
+  const getConditionIcon = (condition) => {
+    switch (condition.toLowerCase()) {
+      case 'sunny':
+        return Sun;
+      case 'rainy':
+        return CloudRain;
+      case 'cloudy':
+      case 'partly cloudy':
+        return Cloud;
+      default:
+        return Sun;
+    }
   };
 
-  const getWeatherIcon = (condition) => {
-    const lowerCondition = condition.toLowerCase();
-    if (lowerCondition.includes('sun')) return <Sun className="w-8 h-8 text-yellow-500" />;
-    if (lowerCondition.includes('rain')) return <CloudRain className="w-8 h-8 text-blue-500" />;
-    if (lowerCondition.includes('cloud')) return <Cloud className="w-8 h-8 text-gray-500" />;
-    return <Sun className="w-8 h-8 text-yellow-500" />;
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high':
+        return 'border-l-red-500 bg-red-50';
+      case 'medium':
+        return 'border-l-yellow-500 bg-yellow-50';
+      case 'low':
+        return 'border-l-green-500 bg-green-50';
+      default:
+        return 'border-l-gray-500 bg-gray-50';
+    }
   };
-
-  const getConditionColor = (condition) => {
-    const lowerCondition = condition.toLowerCase();
-    if (lowerCondition.includes('sun')) return "bg-yellow-100 text-yellow-800";
-    if (lowerCondition.includes('rain')) return "bg-blue-100 text-blue-800";
-    if (lowerCondition.includes('cloud')) return "bg-gray-100 text-gray-800";
-    return "bg-green-100 text-green-800";
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800 p-4 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading weather data...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="container mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Weather Forecast
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Real-time weather updates for {user?.location || "your area"}
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Weather Forecast</h1>
+        <p className="text-gray-600">Stay updated with weather conditions for better farm planning</p>
+      </div>
+
+      {/* Location Search */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            <div className="flex-1 relative">
+              <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Search location..."
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button>Search</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Current Weather */}
+      <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+        <CardContent className="p-8">
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h2 className="text-2xl font-bold mb-2">{location}</h2>
+              <div className="flex items-center mb-4">
+                <div className="text-6xl font-bold mr-4">{currentWeather.temperature}°C</div>
+                <div>
+                  <Cloud className="w-12 h-12 mb-2" />
+                  <p className="text-lg">{currentWeather.condition}</p>
+                  <p className="text-blue-200">Feels like {currentWeather.feelsLike}°C</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center">
+                <Droplets className="w-8 h-8 mx-auto mb-2" />
+                <div className="text-2xl font-bold">{currentWeather.humidity}%</div>
+                <div className="text-sm text-blue-200">Humidity</div>
+              </div>
+              <div className="text-center">
+                <Wind className="w-8 h-8 mx-auto mb-2" />
+                <div className="text-2xl font-bold">{currentWeather.windSpeed} km/h</div>
+                <div className="text-sm text-blue-200">Wind Speed</div>
+              </div>
+              <div className="text-center">
+                <Eye className="w-8 h-8 mx-auto mb-2" />
+                <div className="text-2xl font-bold">{currentWeather.visibility} km</div>
+                <div className="text-sm text-blue-200">Visibility</div>
+              </div>
+              <div className="text-center">
+                <Sun className="w-8 h-8 mx-auto mb-2" />
+                <div className="text-2xl font-bold">{currentWeather.uvIndex}</div>
+                <div className="text-sm text-blue-200">UV Index</div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 7-Day Forecast */}
+      <Card>
+        <CardHeader>
+          <CardTitle>7-Day Forecast</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-4">
+            {forecast.map((day, index) => {
+              const IconComponent = day.icon;
+              return (
+                <div key={index} className="text-center p-4 rounded-lg border">
+                  <div className="font-semibold mb-2">{day.day}</div>
+                  <IconComponent className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                  <div className="text-sm text-gray-600 mb-2">{day.condition}</div>
+                  <div className="font-bold">{day.high}°</div>
+                  <div className="text-gray-500 text-sm">{day.low}°</div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Farming Advice */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Farming Recommendations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {farmingAdvice.map((item, index) => (
+              <div key={index} className={`p-4 border-l-4 rounded-lg ${getPriorityColor(item.priority)}`}>
+                <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-gray-700">{item.advice}</p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Weather Alerts */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-orange-600">Weather Alerts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <div className="flex items-center mb-2">
+              <Cloud className="w-5 h-5 text-orange-600 mr-2" />
+              <h3 className="font-semibold text-orange-800">Heavy Rain Alert</h3>
+            </div>
+            <p className="text-orange-700">
+              Heavy rainfall expected on Wednesday (15-20mm). 
+              Secure outdoor equipment and avoid field operations.
             </p>
           </div>
-
-          {/* Current Weather */}
-          <Card className="mb-8 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Thermometer className="w-5 h-5 text-blue-600" />
-                Current Weather
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="text-center"
-                >
-                  {getWeatherIcon(weather?.current?.condition || "sunny")}
-                  <div className="mt-3">
-                    <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                      {weather?.current?.temperature || 25}°C
-                    </div>
-                    <Badge className={getConditionColor(weather?.current?.condition || "sunny")}>
-                      {weather?.current?.condition || "Sunny"}
-                    </Badge>
-                  </div>
-                </motion.div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Droplets className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Humidity</span>
-                    </div>
-                    <span className="font-semibold">{weather?.current?.humidity || 65}%</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Wind className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Wind Speed</span>
-                    </div>
-                    <span className="font-semibold">{weather?.current?.wind_speed || 10} km/h</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CloudRain className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm text-gray-600 dark:text-gray-300">Precipitation</span>
-                    </div>
-                    <span className="font-semibold">{weather?.current?.precipitation || 0}%</span>
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Farming Advice</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                    {weather?.farming_advice || "Good weather conditions for most farming activities. Consider watering crops in the evening to reduce water evaporation."}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 7-Day Forecast */}
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-green-600" />
-                7-Day Forecast
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {forecast.map((day, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="flex items-center justify-between p-4 rounded-lg bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="text-center min-w-[80px]">
-                        <div className="font-medium text-gray-900 dark:text-white">
-                          {index === 0 ? 'Today' : format(new Date(day.date), 'EEE')}
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {format(new Date(day.date), 'MMM d')}
-                        </div>
-                      </div>
-                      {getWeatherIcon(day.condition)}
-                      <div>
-                        <Badge className={getConditionColor(day.condition)} variant="secondary">
-                          {day.condition}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <div className="font-semibold text-gray-900 dark:text-white">
-                          {day.high_temp}° / {day.low_temp}°
-                        </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {day.precipitation}% rain
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
