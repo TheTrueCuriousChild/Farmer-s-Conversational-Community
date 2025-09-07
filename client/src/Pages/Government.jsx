@@ -12,8 +12,10 @@ import {
   Clock,
   AlertCircle
 } from "lucide-react";
+import { useLanguage } from "@/components/contexts/LanguageContext";
 
 export default function Government() {
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState("all");
 
   const schemes = [
@@ -110,12 +112,12 @@ export default function Government() {
   ];
 
   const categories = [
-    { id: "all", name: "All Schemes" },
-    { id: "subsidy", name: "Subsidies" },
-    { id: "insurance", name: "Insurance" },
-    { id: "credit", name: "Credit" },
+    { id: "all", name: t('allSchemes') },
+    { id: "subsidy", name: t('subsidies') },
+    { id: "insurance", name: t('insurance') },
+    { id: "credit", name: t('credit') },
     { id: "support", name: "Support" },
-    { id: "market", name: "Market" }
+    { id: "market", name: t('marketSupport') }
   ];
 
   const getCategoryColor = (category) => {
@@ -168,8 +170,8 @@ export default function Government() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Government Schemes</h1>
-        <p className="text-gray-600">Access government programs and financial assistance for farmers</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('governmentSchemesTitle')}</h1>
+        <p className="text-gray-600">{t('accessGovernmentPrograms')}</p>
       </div>
 
       {/* My Applications Status */}
@@ -177,7 +179,7 @@ export default function Government() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="w-5 h-5" />
-            My Applications
+            {t('myApplications')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -188,13 +190,15 @@ export default function Government() {
                   {getStatusIcon(app.status)}
                   <div>
                     <h3 className="font-semibold text-gray-900">{app.scheme}</h3>
-                    <p className="text-sm text-gray-600">Application ID: {app.applicationId}</p>
-                    <p className="text-sm text-gray-500">Submitted: {app.submittedDate}</p>
+                    <p className="text-sm text-gray-600">{t('applicationId')}: {app.applicationId}</p>
+                    <p className="text-sm text-gray-500">{t('submitted')}: {app.submittedDate}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <Badge className={getStatusColor(app.status)}>
-                    {app.status}
+                    {app.status === 'approved' ? t('approved') : 
+                     app.status === 'processing' ? t('processing') : 
+                     app.status}
                   </Badge>
                   <p className="text-sm font-semibold text-gray-900 mt-1">{app.amount}</p>
                 </div>
@@ -229,7 +233,7 @@ export default function Government() {
                     {scheme.category}
                   </Badge>
                   {scheme.status === 'limited' && (
-                    <Badge variant="destructive">Limited Time</Badge>
+                    <Badge variant="destructive">{t('limitedTime')}</Badge>
                   )}
                 </div>
               </div>
@@ -241,26 +245,26 @@ export default function Government() {
                 <div>
                   <div className="flex items-center text-gray-600 mb-1">
                     <IndianRupee className="w-4 h-4 mr-1" />
-                    Amount
+                    {t('amount')}
                   </div>
                   <div className="font-semibold text-green-600">{scheme.amount}</div>
                 </div>
                 <div>
                   <div className="flex items-center text-gray-600 mb-1">
                     <Calendar className="w-4 h-4 mr-1" />
-                    Deadline
+                    {t('deadline')}
                   </div>
                   <div className="font-semibold">{scheme.deadline}</div>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">Eligibility:</h4>
+                <h4 className="font-semibold mb-2">{t('eligibility')}:</h4>
                 <p className="text-sm text-gray-600">{scheme.eligibility}</p>
               </div>
 
               <div>
-                <h4 className="font-semibold mb-2">Key Benefits:</h4>
+                <h4 className="font-semibold mb-2">{t('keyBenefits')}:</h4>
                 <ul className="text-sm text-gray-600 space-y-1">
                   {scheme.benefits.map((benefit, index) => (
                     <li key={index} className="flex items-center">
@@ -273,7 +277,7 @@ export default function Government() {
 
               <div className="flex gap-2 pt-4">
                 <Button className="flex-1">
-                  Apply Now
+                  {t('applyNow')}
                 </Button>
                 <Button variant="outline" size="icon">
                   <ExternalLink className="w-4 h-4" />
@@ -289,7 +293,7 @@ export default function Government() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="w-5 h-5" />
-            Quick Links
+            {t('quickLinks')}
           </CardTitle>
         </CardHeader>
         <CardContent>

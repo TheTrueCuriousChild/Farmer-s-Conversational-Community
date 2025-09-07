@@ -13,30 +13,33 @@ import {
   Users,
   Building
 } from "lucide-react";
+import { useLanguage } from "@/components/contexts/LanguageContext";
 
 export default function ContactUs() {
+  const { t } = useLanguage();
+
   const contactInfo = [
     {
       icon: Building,
-      title: "Headquarters",
+      title: t('headquarters'),
       details: "Krishi Seva Technologies Pvt. Ltd.",
       address: "Tech Park, Sector 62, Noida, UP 201301, India"
     },
     {
       icon: Phone,
-      title: "Phone Support",
+      title: t('phoneSupportContact'),
       details: "+91 1800-XXX-XXXX (Toll Free)",
-      address: "Available 24/7 for emergencies"
+      address: t('available24x7')
     },
     {
       icon: Mail,
-      title: "Email Support",
+      title: t('emailSupportContact'),
       details: "support@krishiseva.com",
-      address: "We respond within 24 hours"
+      address: t('responseWithin24h')
     },
     {
       icon: Clock,
-      title: "Business Hours",
+      title: t('businessHoursContact'),
       details: "Monday - Saturday: 9:00 AM - 6:00 PM",
       address: "Sunday: Emergency support only"
     }
@@ -69,8 +72,8 @@ export default function ContactUs() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Us</h1>
-        <p className="text-gray-600">Get in touch with our team for support and inquiries</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('contactUsTitle')}</h1>
+        <p className="text-gray-600">{t('getInTouchWithTeam')}</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -79,48 +82,48 @@ export default function ContactUs() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
-              Send us a Message
+              {t('sendMessage')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form className="space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">First Name</label>
-                  <Input placeholder="Your first name" />
+                  <label className="block text-sm font-medium mb-2">{t('firstName')}</label>
+                  <Input placeholder={t('yourFirstName')} />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Last Name</label>
-                  <Input placeholder="Your last name" />
+                  <label className="block text-sm font-medium mb-2">{t('lastName')}</label>
+                  <Input placeholder={t('yourLastName')} />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Email</label>
-                <Input type="email" placeholder="your.email@example.com" />
+                <label className="block text-sm font-medium mb-2">{t('email')}</label>
+                <Input type="email" placeholder={t('yourEmail')} />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Phone</label>
-                <Input type="tel" placeholder="+91 XXXXX XXXXX" />
+                <label className="block text-sm font-medium mb-2">{t('phone')}</label>
+                <Input type="tel" placeholder={t('phoneNumber')} />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Subject</label>
-                <Input placeholder="What is your message about?" />
+                <label className="block text-sm font-medium mb-2">{t('subject')}</label>
+                <Input placeholder={t('messageSubject')} />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">Message</label>
                 <Textarea 
-                  placeholder="Tell us how we can help you..."
+                  placeholder={t('messageText')}
                   className="h-32"
                 />
               </div>
 
               <Button className="w-full bg-green-600 hover:bg-green-700">
                 <Send className="w-4 h-4 mr-2" />
-                Send Message
+                {t('sendMessageBtn')}
               </Button>
             </form>
           </CardContent>
@@ -130,7 +133,7 @@ export default function ContactUs() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>{t('contactInformation')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -155,14 +158,14 @@ export default function ContactUs() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
-                Find Us
+                {t('findUs')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-gray-200 h-48 rounded-lg flex items-center justify-center mb-4">
                 <div className="text-center text-gray-500">
                   <MapPin className="w-12 h-12 mx-auto mb-2" />
-                  <p>Interactive map coming soon</p>
+                  <p>{t('interactiveMapComingSoon')}</p>
                 </div>
               </div>
               <div className="text-sm text-gray-600">
@@ -181,7 +184,7 @@ export default function ContactUs() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Meet Our Team
+            {t('meetOurTeam')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -218,9 +221,9 @@ export default function ContactUs() {
               <Phone className="w-6 h-6 text-red-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-red-900 mb-1">Emergency Agricultural Support</h3>
-              <p className="text-red-700 mb-2">For urgent farming emergencies and disasters</p>
-              <p className="font-bold text-red-900">Emergency Hotline: 1800-XXX-EMERGENCY</p>
+              <h3 className="font-semibold text-red-900 mb-1">{t('emergencySupport')}</h3>
+              <p className="text-red-700 mb-2">{t('urgentFarmingEmergencies')}</p>
+              <p className="font-bold text-red-900">{t('emergencyHotline')}</p>
             </div>
           </div>
         </CardContent>

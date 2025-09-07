@@ -13,8 +13,10 @@ import {
   User,
   Package
 } from "lucide-react";
+import { useLanguage } from "@/components/contexts/LanguageContext";
 
 export default function Marketplace() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("buy");
 
   const products = [
@@ -22,84 +24,84 @@ export default function Marketplace() {
       id: 1,
       name: "Organic Wheat",
       price: 25,
-      unit: "per kg",
+      unit: t('perKg'),
       seller: "Ramesh Kumar",
       location: "Punjab",
       rating: 4.8,
       image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop",
-      category: "Grains",
+      category: t('grains'),
       inStock: true
     },
     {
       id: 2,
       name: "Fresh Tomatoes",
       price: 40,
-      unit: "per kg",
+      unit: t('perKg'),
       seller: "Priya Sharma",
       location: "Maharashtra",
       rating: 4.6,
       image: "https://images.unsplash.com/photo-1546470427-227c46e8e6c3?w=300&h=200&fit=crop",
-      category: "Vegetables",
+      category: t('vegetables'),
       inStock: true
     },
     {
       id: 3,
       name: "Basmati Rice",
       price: 80,
-      unit: "per kg",
+      unit: t('perKg'),
       seller: "Amit Singh",
       location: "Haryana",
       rating: 4.9,
       image: "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=200&fit=crop",
-      category: "Grains",
+      category: t('grains'),
       inStock: true
     },
     {
       id: 4,
       name: "Organic Potatoes",
       price: 30,
-      unit: "per kg",
+      unit: t('perKg'),
       seller: "Sunita Devi",
       location: "Uttar Pradesh",
       rating: 4.7,
       image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&h=200&fit=crop",
-      category: "Vegetables",
+      category: t('vegetables'),
       inStock: false
     },
     {
       id: 5,
       name: "Fresh Onions",
       price: 20,
-      unit: "per kg",
+      unit: t('perKg'),
       seller: "Rajesh Patel",
       location: "Gujarat",
       rating: 4.5,
       image: "https://images.unsplash.com/photo-1508747703725-719777637510?w=300&h=200&fit=crop",
-      category: "Vegetables",
+      category: t('vegetables'),
       inStock: true
     },
     {
       id: 6,
       name: "Organic Lentils",
       price: 120,
-      unit: "per kg",
+      unit: t('perKg'),
       seller: "Meera Roy",
       location: "Rajasthan",
       rating: 4.8,
       image: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300&h=200&fit=crop",
-      category: "Pulses",
+      category: t('pulses'),
       inStock: true
     }
   ];
 
-  const categories = ["All", "Grains", "Vegetables", "Fruits", "Pulses", "Spices"];
+  const categories = [t('all'), t('grains'), t('vegetables'), t('fruits'), t('pulses'), t('spices')];
 
   const myListings = [
     {
       id: 1,
       name: "Fresh Carrots",
       price: 35,
-      unit: "per kg",
+      unit: t('perKg'),
       views: 145,
       inquiries: 12,
       status: "active"
@@ -108,7 +110,7 @@ export default function Marketplace() {
       id: 2,
       name: "Organic Spinach",
       price: 45,
-      unit: "per kg",
+      unit: t('perKg'),
       views: 89,
       inquiries: 6,
       status: "active"
@@ -118,8 +120,8 @@ export default function Marketplace() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketplace</h1>
-        <p className="text-gray-600">Buy and sell agricultural products directly with farmers</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('marketplaceTitle')}</h1>
+        <p className="text-gray-600">{t('buyAndSellProducts')}</p>
       </div>
 
       {/* Tab Navigation */}
@@ -129,14 +131,14 @@ export default function Marketplace() {
           onClick={() => setActiveTab("buy")}
           className="px-6"
         >
-          Buy Products
+          {t('buyProducts')}
         </Button>
         <Button
           variant={activeTab === "sell" ? "default" : "ghost"}
           onClick={() => setActiveTab("sell")}
           className="px-6"
         >
-          My Listings
+          {t('myListings')}
         </Button>
       </div>
 
@@ -149,7 +151,7 @@ export default function Marketplace() {
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                   <Input
-                    placeholder="Search products..."
+                    placeholder={t('searchProducts')}
                     className="pl-10"
                   />
                 </div>
@@ -181,7 +183,7 @@ export default function Marketplace() {
                   />
                   {!product.inStock && (
                     <div className="absolute top-4 left-4">
-                      <Badge variant="destructive">Out of Stock</Badge>
+                      <Badge variant="destructive">{t('outOfStock')}</Badge>
                     </div>
                   )}
                   <div className="absolute top-4 right-4">
@@ -221,7 +223,7 @@ export default function Marketplace() {
                       disabled={!product.inStock}
                     >
                       <ShoppingCart className="w-4 h-4 mr-2" />
-                      {product.inStock ? "Add to Cart" : "Out of Stock"}
+                      {product.inStock ? t('addToCart') : t('outOfStock')}
                     </Button>
                     <Button variant="outline" size="icon">
                       <Phone className="w-4 h-4" />
@@ -236,10 +238,10 @@ export default function Marketplace() {
         <>
           {/* Sell Section */}
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">My Product Listings</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t('myProductListings')}</h2>
             <Button>
               <Package className="w-4 h-4 mr-2" />
-              Add New Product
+              {t('addNewProduct')}
             </Button>
           </div>
 
@@ -261,20 +263,20 @@ export default function Marketplace() {
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-gray-900">{listing.views}</div>
-                      <div className="text-sm text-gray-600">Views</div>
+                      <div className="text-sm text-gray-600">{t('views')}</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-gray-900">{listing.inquiries}</div>
-                      <div className="text-sm text-gray-600">Inquiries</div>
+                      <div className="text-sm text-gray-600">{t('inquiries')}</div>
                     </div>
                   </div>
                   
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1">
-                      Edit Listing
+                      {t('editListing')}
                     </Button>
                     <Button variant="outline" className="flex-1">
-                      View Analytics
+                      {t('viewAnalytics')}
                     </Button>
                   </div>
                 </CardContent>
@@ -285,25 +287,25 @@ export default function Marketplace() {
           {/* Quick Stats */}
           <Card>
             <CardHeader>
-              <CardTitle>Sales Overview</CardTitle>
+              <CardTitle>{t('salesOverview')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600">2</div>
-                  <div className="text-gray-600">Active Listings</div>
+                  <div className="text-gray-600">{t('activeListings')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600">234</div>
-                  <div className="text-gray-600">Total Views</div>
+                  <div className="text-gray-600">{t('totalViews')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-orange-600">18</div>
-                  <div className="text-gray-600">Inquiries</div>
+                  <div className="text-gray-600">{t('inquiries')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600">₹15,400</div>
-                  <div className="text-gray-600">Revenue This Month</div>
+                  <div className="text-gray-600">{t('revenueThisMonth')}</div>
                 </div>
               </div>
             </CardContent>
