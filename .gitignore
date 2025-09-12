@@ -4,7 +4,8 @@ public
 node_modules
 .env
 krishi_ai_env
-client/node_modules
+krishi-seva/node_modules
 server/backend/node_modules
 pycache
 data
+krishi-seva/src/assets
