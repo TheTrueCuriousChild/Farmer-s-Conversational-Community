@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage, translations } from '../context/LanguageContext';
 import { toast } from 'react-toastify';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 
@@ -15,7 +16,9 @@ const Login = () => {
   
   const { login } = useAuth();
   const { isDarkMode } = useTheme();
+  const { language } = useLanguage();
   const navigate = useNavigate();
+  const t = translations[language];
 
   const handleChange = (e) => {
     setFormData({
@@ -56,17 +59,17 @@ const Login = () => {
           <h2 className={`mt-6 text-center text-3xl font-extrabold ${
             isDarkMode ? 'text-white' : 'text-gray-900'
           }`}>
-            Sign in to your account
+            {t.signInAccount}
           </h2>
           <p className={`mt-2 text-center text-sm ${
             isDarkMode ? 'text-gray-400' : 'text-gray-600'
           }`}>
-            Or{' '}
+            {t.or}{' '}
             <Link
               to="/register"
               className="font-medium text-green-600 hover:text-green-500"
             >
-              create a new account
+              {t.createNew}
             </Link>
           </p>
         </div>
@@ -77,7 +80,7 @@ const Login = () => {
               <label htmlFor="phone" className={`block text-sm font-medium ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Phone Number
+                {t.phoneNumber}
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -95,7 +98,7 @@ const Login = () => {
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                   } focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
-                  placeholder="Enter your phone number"
+                  placeholder={language === 'en' ? 'Enter your phone number' : 'നിങ്ങളുടെ ഫോൺ നമ്പർ നൽകുക'}
                 />
               </div>
             </div>
@@ -104,7 +107,7 @@ const Login = () => {
               <label htmlFor="password" className={`block text-sm font-medium ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-700'
               }`}>
-                Password
+                {t.password}
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -122,7 +125,7 @@ const Login = () => {
                       ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
                       : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
                   } focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm`}
-                  placeholder="Enter your password"
+                  placeholder={language === 'en' ? 'Enter your password' : 'നിങ്ങളുടെ പാസ്‌വേഡ് നൽകുക'}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   <button
@@ -154,7 +157,7 @@ const Login = () => {
               <label htmlFor="remember-me" className={`ml-2 block text-sm ${
                 isDarkMode ? 'text-gray-300' : 'text-gray-900'
               }`}>
-                Remember me
+                {t.rememberMe}
               </label>
             </div>
 
@@ -162,7 +165,7 @@ const Login = () => {
               <a href="#" className={`font-medium ${
                 isDarkMode ? 'text-green-400 hover:text-green-300' : 'text-green-600 hover:text-green-500'
               }`}>
-                Forgot your password?
+                {t.forgotPassword}
               </a>
             </div>
           </div>
@@ -178,10 +181,10 @@ const Login = () => {
               {loading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  {language === 'en' ? 'Signing in...' : 'ലോഗിൻ ചെയ്യുന്നു...'}
                 </div>
               ) : (
-                'Sign in'
+                t.signIn
               )}
             </button>
           </div>

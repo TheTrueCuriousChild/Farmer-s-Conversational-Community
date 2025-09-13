@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage, translations } from '../context/LanguageContext';
 import { 
   Sun, 
   Moon, 
@@ -13,19 +14,23 @@ import {
   LogOut,
   Phone,
   Mail,
-  HelpCircle
+  HelpCircle,
+  Globe
 } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
   const { isDarkMode, toggleTheme } = useTheme();
+  const { language, changeLanguage } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
+  const t = translations[language];
+
   const navigationItems = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Chatbot', path: '/chatbot', icon: MessageSquare },
-    { name: 'Contact', path: '/contact', icon: HelpCircle },
+    { name: t.home, path: '/', icon: Home },
+    { name: t.chatbot, path: '/chatbot', icon: MessageSquare },
+    { name: t.contact, path: '/contact', icon: HelpCircle },
   ];
 
   const handleLogout = () => {
@@ -41,11 +46,11 @@ const Layout = ({ children }) => {
       <header className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
         isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-green-100'
       }`}>
-        <div className="container mx-auto px-4">
+        <div className="container">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full gradient-green flex items-center justify-center">
                 <span className="text-white font-bold text-lg">🌱</span>
               </div>
               <h1 className="text-2xl font-bold text-green-600">
@@ -54,7 +59,7 @@ const Layout = ({ children }) => {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center gap-8">
               {navigationItems.map((item) => (
                 <Link
                   key={item.path}
@@ -75,12 +80,30 @@ const Layout = ({ children }) => {
 
             {/* Right side controls */}
             <div className="flex items-center gap-4">
+              {/* Language Selector */}
+              <div className="relative">
+                <select
+                  value={language}
+                  onChange={(e) => changeLanguage(e.target.value)}
+                  className={`appearance-none bg-transparent border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    isDarkMode 
+                      ? 'text-white bg-gray-700' 
+                      : 'text-gray-700 bg-white'
+                  }`}
+                >
+                  <option value="en">English</option>
+                  <option value="ml">മലയാളം</option>
+                </select>
+                <Globe className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              </div>
+
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
                 className={`p-2 rounded-md transition-colors ${
                   isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
                 }`}
+                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {isDarkMode ? (
                   <Sun className="w-5 h-5 text-yellow-400" />
@@ -101,7 +124,7 @@ const Layout = ({ children }) => {
                     }`}
                   >
                     <User className="w-4 h-4" />
-                    Dashboard
+                    {t.dashboard}
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -112,7 +135,7 @@ const Layout = ({ children }) => {
                     }`}
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    {t.logout}
                   </button>
                 </div>
               ) : (
@@ -125,13 +148,13 @@ const Layout = ({ children }) => {
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    Login
+                    {t.login}
                   </Link>
                   <Link
                     to="/register"
                     className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
                   >
-                    Register
+                    {t.register}
                   </Link>
                 </div>
               )}
@@ -187,7 +210,7 @@ const Layout = ({ children }) => {
                     }`}
                   >
                     <User className="w-4 h-4" />
-                    Dashboard
+                    {t.dashboard}
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -198,7 +221,7 @@ const Layout = ({ children }) => {
                     }`}
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    {t.logout}
                   </button>
                 </div>
               ) : (
@@ -212,14 +235,14 @@ const Layout = ({ children }) => {
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    Login
+                    {t.login}
                   </Link>
                   <Link
                     to="/register"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 transition-colors"
                   >
-                    Register
+                    {t.register}
                   </Link>
                 </div>
               )}
@@ -237,11 +260,11 @@ const Layout = ({ children }) => {
       <footer className={`mt-20 border-t transition-colors duration-300 ${
         isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
       }`}>
-        <div className="container mx-auto px-4 py-12">
+        <div className="container py-12">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full gradient-green flex items-center justify-center">
                   <span className="text-white font-bold">🌱</span>
                 </div>
                 <h3 className="font-bold text-lg">KrishiSeva</h3>
@@ -257,18 +280,18 @@ const Layout = ({ children }) => {
               <h4 className={`font-semibold mb-4 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                Features
+                {t.features}
               </h4>
               <div className="space-y-2">
                 <Link to="/chatbot" className={`block text-sm hover:text-green-600 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
-                  AI Chatbot
+                  {t.aiChatbot}
                 </Link>
                 <Link to="/contact" className={`block text-sm hover:text-green-600 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
-                  Support
+                  {t.support}
                 </Link>
               </div>
             </div>
@@ -277,13 +300,13 @@ const Layout = ({ children }) => {
               <h4 className={`font-semibold mb-4 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                Support
+                {t.support}
               </h4>
               <div className="space-y-2">
                 <Link to="/contact" className={`block text-sm hover:text-green-600 ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
-                  Help Center
+                  {t.helpCenter}
                 </Link>
                 <div className={`text-sm ${
                   isDarkMode ? 'text-gray-400' : 'text-gray-600'
@@ -304,12 +327,12 @@ const Layout = ({ children }) => {
               <h4 className={`font-semibold mb-4 ${
                 isDarkMode ? 'text-white' : 'text-gray-900'
               }`}>
-                Contact
+                {t.contact}
               </h4>
               <p className={`text-sm ${
                 isDarkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                Get in touch with our support team for any queries or assistance.
+                {t.supportDescription}
               </p>
             </div>
           </div>
@@ -317,7 +340,7 @@ const Layout = ({ children }) => {
           <div className={`mt-8 pt-8 border-t text-center text-sm ${
             isDarkMode ? 'border-gray-700 text-gray-400' : 'border-gray-200 text-gray-600'
           }`}>
-            <p>&copy; 2024 KrishiSeva. All rights reserved. Made with ❤️ for farmers.</p>
+            <p>&copy; 2024 KrishiSeva. {t.allRightsReserved}</p>
           </div>
         </div>
       </footer>

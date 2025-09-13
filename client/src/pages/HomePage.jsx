@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage, translations } from '../context/LanguageContext';
 import { 
   MessageSquare, 
   Users, 
@@ -10,118 +11,172 @@ import {
   ArrowRight,
   Leaf,
   Phone,
-  Mail
+  Mail,
+  Star,
+  CheckCircle,
+  Globe,
+  Zap
 } from 'lucide-react';
 
 const HomePage = () => {
   const { user } = useAuth();
   const { isDarkMode } = useTheme();
+  const { language } = useLanguage();
+  const t = translations[language];
 
   const features = [
     {
       icon: MessageSquare,
-      title: 'AI Chatbot',
-      description: 'Get instant answers to your farming questions with our intelligent AI assistant.',
-      color: 'text-blue-600'
+      title: t.aiChatbot,
+      description: t.aiChatbotDesc,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/20'
     },
     {
       icon: Users,
-      title: 'Community',
-      description: 'Connect with fellow farmers, share experiences, and learn from each other.',
-      color: 'text-green-600'
+      title: t.community,
+      description: t.communityDesc,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50 dark:bg-green-900/20'
     },
     {
       icon: BarChart3,
-      title: 'Analytics',
-      description: 'Track your farm performance with detailed analytics and insights.',
-      color: 'text-purple-600'
+      title: t.analytics,
+      description: t.analyticsDesc,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50 dark:bg-purple-900/20'
     },
     {
       icon: Shield,
-      title: 'Secure',
-      description: 'Your data is protected with enterprise-grade security measures.',
-      color: 'text-red-600'
+      title: t.secure,
+      description: t.secureDesc,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 dark:bg-red-900/20'
     }
   ];
 
   const userTypes = [
     {
-      title: 'Farmer',
-      description: 'Manage your farm, get crop advice, and connect with buyers.',
-      icon: '🌾'
+      title: t.farmer,
+      description: t.farmerDesc,
+      icon: '🌾',
+      color: 'from-green-400 to-green-600'
     },
     {
-      title: 'Retailer',
-      description: 'Source fresh produce directly from farmers and manage your inventory.',
-      icon: '🏪'
+      title: t.retailer,
+      description: t.retailerDesc,
+      icon: '🏪',
+      color: 'from-blue-400 to-blue-600'
     },
     {
-      title: 'Laborer',
-      description: 'Find work opportunities and showcase your farming skills.',
-      icon: '👷'
+      title: t.laborer,
+      description: t.laborerDesc,
+      icon: '👷',
+      color: 'from-orange-400 to-orange-600'
     },
     {
-      title: 'Admin',
-      description: 'Manage the platform and support the farming community.',
-      icon: '👨‍💼'
+      title: t.admin,
+      description: t.adminDesc,
+      icon: '👨‍💼',
+      color: 'from-purple-400 to-purple-600'
     }
+  ];
+
+  const stats = [
+    { number: '10K+', label: language === 'en' ? 'Active Users' : 'സജീവ ഉപയോക്താക്കൾ' },
+    { number: '50+', label: language === 'en' ? 'Crop Types' : 'വിളകൾ' },
+    { number: '99%', label: language === 'en' ? 'Success Rate' : 'വിജയ നിരക്ക്' },
+    { number: '24/7', label: language === 'en' ? 'Support' : 'പിന്തുണ' }
   ];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className={`py-20 ${
-        isDarkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-green-50 to-green-100'
+      <section className={`py-20 overflow-hidden ${
+        isDarkMode ? 'bg-gray-900' : 'gradient-green-subtle'
       }`}>
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className={`text-5xl md:text-6xl font-bold mb-6 ${
+        <div className="container">
+          <div className="text-center max-w-5xl mx-auto">
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full gradient-green flex items-center justify-center shadow-xl">
+                  <span className="text-4xl">🌱</span>
+                </div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-yellow-800" />
+                </div>
+              </div>
+            </div>
+            
+            <h1 className={`text-6xl md:text-7xl font-bold mb-6 leading-tight ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Welcome to{' '}
-              <span className="text-green-600">KrishiSeva</span>
+              {t.welcomeTitle.split('KrishiSeva')[0]}
+              <span className="text-green-600">
+                KrishiSeva
+              </span>
             </h1>
-            <p className={`text-xl md:text-2xl mb-8 ${
+            
+            <p className={`text-2xl md:text-3xl mb-8 font-medium ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Your comprehensive agricultural platform for modern farming
-            </p>
-            <p className={`text-lg mb-12 ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-700'
-            }`}>
-              Whether you're a farmer, retailer, laborer, or admin, we have the tools and community you need to succeed.
+              {t.welcomeSubtitle}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <p className={`text-lg md:text-xl mb-12 max-w-4xl mx-auto leading-relaxed ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-700'
+            }`}>
+              {t.welcomeDescription}
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               {user ? (
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                  className="group inline-flex items-center gap-3 px-8 py-4 gradient-green text-white text-lg font-semibold rounded-xl hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
                 >
-                  Go to Dashboard
-                  <ArrowRight className="w-5 h-5" />
+                  {t.dashboard}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               ) : (
                 <>
                   <Link
                     to="/register"
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                    className="group inline-flex items-center gap-3 px-8 py-4 gradient-green text-white text-lg font-semibold rounded-xl hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
                   >
-                    Get Started
-                    <ArrowRight className="w-5 h-5" />
+                    {t.getStarted}
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                   <Link
                     to="/login"
-                    className={`inline-flex items-center gap-2 px-8 py-4 border-2 border-green-600 text-lg font-semibold rounded-lg transition-colors ${
+                    className={`group inline-flex items-center gap-3 px-8 py-4 border-2 border-green-600 text-lg font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
                       isDarkMode 
                         ? 'text-green-400 hover:bg-green-600 hover:text-white' 
                         : 'text-green-600 hover:bg-green-600 hover:text-white'
                     }`}
                   >
-                    Login
+                    {t.login}
                   </Link>
                 </>
               )}
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+              {stats.map((stat, index) => (
+                <div key={index} className="text-center">
+                  <div className={`text-3xl md:text-4xl font-bold mb-2 ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {stat.number}
+                  </div>
+                  <div className={`text-sm font-medium ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -131,17 +186,17 @@ const HomePage = () => {
       <section className={`py-20 ${
         isDarkMode ? 'bg-gray-800' : 'bg-white'
       }`}>
-        <div className="container mx-auto px-4">
+        <div className="container">
           <div className="text-center mb-16">
-            <h2 className={`text-4xl font-bold mb-4 ${
+            <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Why Choose KrishiSeva?
+              {t.whyChoose}
             </h2>
-            <p className={`text-xl ${
+            <p className={`text-xl md:text-2xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Comprehensive tools and features designed for the agricultural community
+              {t.featuresDescription}
             </p>
           </div>
 
@@ -149,19 +204,21 @@ const HomePage = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-lg border transition-all duration-300 hover:shadow-lg ${
+                className={`group p-8 rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-2 ${
                   isDarkMode 
                     ? 'bg-gray-700 border-gray-600 hover:border-green-500' 
                     : 'bg-white border-gray-200 hover:border-green-300'
                 }`}
               >
-                <feature.icon className={`w-12 h-12 mb-4 ${feature.color}`} />
-                <h3 className={`text-xl font-semibold mb-3 ${
+                <div className={`w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className={`w-8 h-8 text-green-600`} />
+                </div>
+                <h3 className={`text-xl font-bold mb-4 ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   {feature.title}
                 </h3>
-                <p className={`${
+                <p className={`leading-relaxed ${
                   isDarkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}>
                   {feature.description}
@@ -176,17 +233,17 @@ const HomePage = () => {
       <section className={`py-20 ${
         isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
       }`}>
-        <div className="container mx-auto px-4">
+        <div className="container">
           <div className="text-center mb-16">
-            <h2 className={`text-4xl font-bold mb-4 ${
+            <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              For Every Role in Agriculture
+              {t.forEveryRole}
             </h2>
-            <p className={`text-xl ${
+            <p className={`text-xl md:text-2xl max-w-3xl mx-auto ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Tailored experiences for different members of the farming community
+              {t.rolesDescription}
             </p>
           </div>
 
@@ -194,19 +251,21 @@ const HomePage = () => {
             {userTypes.map((type, index) => (
               <div
                 key={index}
-                className={`p-6 rounded-lg border transition-all duration-300 hover:shadow-lg ${
+                className={`group p-8 rounded-2xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-2 ${
                   isDarkMode 
                     ? 'bg-gray-800 border-gray-700 hover:border-green-500' 
                     : 'bg-white border-gray-200 hover:border-green-300'
                 }`}
               >
-                <div className="text-4xl mb-4">{type.icon}</div>
-                <h3 className={`text-xl font-semibold mb-3 ${
+                <div className={`w-20 h-20 gradient-green rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                  <span className="text-4xl">{type.icon}</span>
+                </div>
+                <h3 className={`text-xl font-bold mb-4 ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>
                   {type.title}
                 </h3>
-                <p className={`${
+                <p className={`leading-relaxed ${
                   isDarkMode ? 'text-gray-300' : 'text-gray-600'
                 }`}>
                   {type.description}
@@ -218,40 +277,30 @@ const HomePage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className={`py-20 ${
-        isDarkMode ? 'bg-gray-800' : 'bg-green-600'
-      }`}>
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className={`text-4xl font-bold mb-6 ${
-              isDarkMode ? 'text-white' : 'text-white'
-            }`}>
-              Ready to Transform Your Agricultural Journey?
+      <section className={`py-20 gradient-green`}>
+        <div className="container">
+          <div className="text-center max-w-4xl mx-auto">
+            <h2 className={`text-4xl md:text-5xl font-bold mb-6 text-white`}>
+              {t.readyToTransform}
             </h2>
-            <p className={`text-xl mb-8 ${
-              isDarkMode ? 'text-gray-300' : 'text-green-100'
-            }`}>
-              Join thousands of farmers, retailers, and agricultural professionals who trust KrishiSeva.
+            <p className={`text-xl md:text-2xl mb-12 text-green-100`}>
+              {t.joinThousands}
             </p>
             
             {!user && (
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-white text-green-600 text-lg font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+                  className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-green-600 text-lg font-semibold rounded-xl hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
                 >
-                  Start Your Journey
-                  <ArrowRight className="w-5 h-5" />
+                  {t.getStarted}
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   to="/chatbot"
-                  className={`inline-flex items-center gap-2 px-8 py-4 border-2 border-white text-lg font-semibold rounded-lg transition-colors ${
-                    isDarkMode 
-                      ? 'text-white hover:bg-white hover:text-gray-900' 
-                      : 'text-white hover:bg-white hover:text-green-600'
-                  }`}
+                  className="group inline-flex items-center gap-3 px-8 py-4 border-2 border-white text-white text-lg font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white hover:text-green-600"
                 >
-                  Try Our Chatbot
+                  {t.tryChatbot}
                 </Link>
               </div>
             )}
@@ -263,31 +312,33 @@ const HomePage = () => {
       <section className={`py-20 ${
         isDarkMode ? 'bg-gray-900' : 'bg-white'
       }`}>
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className={`text-4xl font-bold mb-6 ${
+        <div className="container">
+          <div className="text-center max-w-4xl mx-auto">
+            <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${
               isDarkMode ? 'text-white' : 'text-gray-900'
             }`}>
-              Need Help? We're Here for You
+              {t.needHelp}
             </h2>
-            <p className={`text-xl mb-8 ${
+            <p className={`text-xl md:text-2xl mb-12 ${
               isDarkMode ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Our support team is ready to assist you with any questions or concerns.
+              {t.supportDescription}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <div className={`flex items-center gap-3 p-4 rounded-lg ${
-                isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <div className={`flex items-center gap-6 p-8 rounded-2xl border transition-all duration-300 hover:shadow-lg ${
+                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
               }`}>
-                <Phone className="w-6 h-6 text-green-600" />
+                <div className="w-16 h-16 bg-green-100 dark:bg-green-900/20 rounded-2xl flex items-center justify-center">
+                  <Phone className="w-8 h-8 text-green-600" />
+                </div>
                 <div>
-                  <p className={`font-semibold ${
+                  <p className={`text-xl font-bold mb-2 ${
                     isDarkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    Call Us
+                    {t.callUs}
                   </p>
-                  <p className={`${
+                  <p className={`text-lg ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>
                     +91 9876543210
@@ -295,17 +346,19 @@ const HomePage = () => {
                 </div>
               </div>
               
-              <div className={`flex items-center gap-3 p-4 rounded-lg ${
-                isDarkMode ? 'bg-gray-800' : 'bg-gray-50'
+              <div className={`flex items-center gap-6 p-8 rounded-2xl border transition-all duration-300 hover:shadow-lg ${
+                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
               }`}>
-                <Mail className="w-6 h-6 text-green-600" />
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/20 rounded-2xl flex items-center justify-center">
+                  <Mail className="w-8 h-8 text-blue-600" />
+                </div>
                 <div>
-                  <p className={`font-semibold ${
+                  <p className={`text-xl font-bold mb-2 ${
                     isDarkMode ? 'text-white' : 'text-gray-900'
                   }`}>
-                    Email Us
+                    {t.emailUs}
                   </p>
-                  <p className={`${
+                  <p className={`text-lg ${
                     isDarkMode ? 'text-gray-300' : 'text-gray-600'
                   }`}>
                     support@krishiseva.com
@@ -314,13 +367,13 @@ const HomePage = () => {
               </div>
             </div>
             
-            <div className="mt-8">
+            <div className="mt-12">
               <Link
                 to="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                className="group inline-flex items-center gap-3 px-8 py-4 bg-green-600 text-white text-lg font-semibold rounded-xl hover:bg-green-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-1"
               >
-                Contact Support
-                <ArrowRight className="w-4 h-4" />
+                {t.contactSupport}
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
