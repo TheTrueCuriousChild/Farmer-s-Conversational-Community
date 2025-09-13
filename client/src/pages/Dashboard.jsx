@@ -1,431 +1,769 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage, translations } from '../context/LanguageContext';
 import { 
-  BarChart3, 
-  Users, 
-  Package, 
+  User, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Calendar, 
   TrendingUp, 
-  MessageSquare, 
+  Package, 
+  Users, 
   Settings,
-  Bell,
-  Calendar,
-  MapPin,
-  Phone,
-  Mail,
+  MessageSquare,
   Star,
-  DollarSign,
   Clock,
-  CheckCircle
+  CheckCircle,
+  AlertCircle,
+  BarChart3,
+  Wrench,
+  Building,
+  Shield
 } from 'lucide-react';
+import RatingSystem from '../components/RatingSystem';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const { isDarkMode } = useTheme();
-  const [stats, setStats] = useState({});
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    totalTransactions: 0,
+    revenue: 0
+  });
 
   useEffect(() => {
-    // Load user-specific stats based on role
-    loadUserStats();
-  }, [user]);
-
-  const loadUserStats = async () => {
-    // Mock data - in real app, this would come from API
-    const mockStats = {
-      farmer: {
-        totalCrops: 12,
-        activeProjects: 3,
-        monthlyRevenue: 45000,
-        rating: 4.8,
-        upcomingTasks: 5,
-        recentActivities: [
-          { id: 1, action: 'Planted rice seeds', time: '2 hours ago', status: 'completed' },
-          { id: 2, action: 'Applied fertilizer', time: '1 day ago', status: 'completed' },
-          { id: 3, action: 'Harvested wheat', time: '3 days ago', status: 'completed' }
-        ]
-      },
-      retailer: {
-        totalProducts: 45,
-        activeOrders: 8,
-        monthlyRevenue: 125000,
-        rating: 4.6,
-        pendingOrders: 3,
-        recentActivities: [
-          { id: 1, action: 'New order received', time: '1 hour ago', status: 'pending' },
-          { id: 2, action: 'Product restocked', time: '4 hours ago', status: 'completed' },
-          { id: 3, action: 'Order delivered', time: '1 day ago', status: 'completed' }
-        ]
-      },
-      laborer: {
-        totalJobs: 15,
-        activeJobs: 2,
-        monthlyEarnings: 25000,
-        rating: 4.9,
-        availableJobs: 7,
-        recentActivities: [
-          { id: 1, action: 'Job completed - Harvesting', time: '3 hours ago', status: 'completed' },
-          { id: 2, action: 'New job assigned', time: '1 day ago', status: 'active' },
-          { id: 3, action: 'Payment received', time: '2 days ago', status: 'completed' }
-        ]
-      },
-      admin: {
+    // Simulate loading stats
+    setTimeout(() => {
+      setStats({
         totalUsers: 1250,
         activeUsers: 980,
-        monthlyRevenue: 500000,
-        systemHealth: 99.8,
-        pendingRequests: 12,
-        recentActivities: [
-          { id: 1, action: 'New user registered', time: '30 minutes ago', status: 'pending' },
-          { id: 2, action: 'System backup completed', time: '2 hours ago', status: 'completed' },
-          { id: 3, action: 'Support ticket resolved', time: '4 hours ago', status: 'completed' }
-        ]
-      }
-    };
-
-    setStats(mockStats[user?.role] || {});
-  };
+        totalTransactions: 3450,
+        revenue: 125000
+      });
+    }, 1000);
+  }, []);
 
   const getRoleIcon = (role) => {
-    const icons = {
-      farmer: '🌾',
-      retailer: '🏪',
-      laborer: '👷',
-      admin: '👨‍💼'
-    };
-    return icons[role] || '👤';
+    switch (role) {
+      case 'farmer': return '🌾';
+      case 'retailer': return '🏪';
+      case 'laborer': return '👷';
+      case 'admin': return '👨‍💼';
+      default: return '👤';
+    }
   };
 
   const getRoleColor = (role) => {
-    const colors = {
-      farmer: 'text-green-600',
-      retailer: 'text-blue-600',
-      laborer: 'text-orange-600',
-      admin: 'text-purple-600'
-    };
-    return colors[role] || 'text-gray-600';
-  };
-
-  const getDashboardCards = () => {
-    if (!user) return [];
-
-    switch (user.role) {
-      case 'farmer':
-        return [
-          { title: 'Total Crops', value: stats.totalCrops, icon: BarChart3, color: 'text-green-600' },
-          { title: 'Active Projects', value: stats.activeProjects, icon: TrendingUp, color: 'text-blue-600' },
-          { title: 'Monthly Revenue', value: `₹${stats.monthlyRevenue?.toLocaleString()}`, icon: DollarSign, color: 'text-green-600' },
-          { title: 'Rating', value: stats.rating, icon: Star, color: 'text-yellow-600' }
-        ];
-      case 'retailer':
-        return [
-          { title: 'Total Products', value: stats.totalProducts, icon: Package, color: 'text-blue-600' },
-          { title: 'Active Orders', value: stats.activeOrders, icon: TrendingUp, color: 'text-green-600' },
-          { title: 'Monthly Revenue', value: `₹${stats.monthlyRevenue?.toLocaleString()}`, icon: DollarSign, color: 'text-green-600' },
-          { title: 'Rating', value: stats.rating, icon: Star, color: 'text-yellow-600' }
-        ];
-      case 'laborer':
-        return [
-          { title: 'Total Jobs', value: stats.totalJobs, icon: BarChart3, color: 'text-orange-600' },
-          { title: 'Active Jobs', value: stats.activeJobs, icon: Clock, color: 'text-blue-600' },
-          { title: 'Monthly Earnings', value: `₹${stats.monthlyEarnings?.toLocaleString()}`, icon: DollarSign, color: 'text-green-600' },
-          { title: 'Rating', value: stats.rating, icon: Star, color: 'text-yellow-600' }
-        ];
-      case 'admin':
-        return [
-          { title: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-purple-600' },
-          { title: 'Active Users', value: stats.activeUsers, icon: TrendingUp, color: 'text-green-600' },
-          { title: 'Monthly Revenue', value: `₹${stats.monthlyRevenue?.toLocaleString()}`, icon: DollarSign, color: 'text-green-600' },
-          { title: 'System Health', value: `${stats.systemHealth}%`, icon: CheckCircle, color: 'text-green-600' }
-        ];
-      default:
-        return [];
+    switch (role) {
+      case 'farmer': return 'from-green-400 to-green-600';
+      case 'retailer': return 'from-blue-400 to-blue-600';
+      case 'laborer': return 'from-orange-400 to-orange-600';
+      case 'admin': return 'from-purple-400 to-purple-600';
+      default: return 'from-gray-400 to-gray-600';
     }
   };
 
-  const getQuickActions = () => {
-    if (!user) return [];
-
-    switch (user.role) {
-      case 'farmer':
-        return [
-          { title: 'Ask AI Assistant', icon: MessageSquare, color: 'bg-blue-500', href: '/chatbot' },
-          { title: 'View Crops', icon: BarChart3, color: 'bg-green-500', href: '#' },
-          { title: 'Market Prices', icon: TrendingUp, color: 'bg-yellow-500', href: '#' },
-          { title: 'Weather Forecast', icon: Calendar, color: 'bg-purple-500', href: '#' }
-        ];
-      case 'retailer':
-        return [
-          { title: 'Manage Products', icon: Package, color: 'bg-blue-500', href: '#' },
-          { title: 'View Orders', icon: BarChart3, color: 'bg-green-500', href: '#' },
-          { title: 'Analytics', icon: TrendingUp, color: 'bg-yellow-500', href: '#' },
-          { title: 'Customer Support', icon: MessageSquare, color: 'bg-purple-500', href: '/contact' }
-        ];
-      case 'laborer':
-        return [
-          { title: 'Find Jobs', icon: BarChart3, color: 'bg-blue-500', href: '#' },
-          { title: 'My Jobs', icon: Clock, color: 'bg-green-500', href: '#' },
-          { title: 'Earnings', icon: DollarSign, color: 'bg-yellow-500', href: '#' },
-          { title: 'Profile', icon: Settings, color: 'bg-purple-500', href: '#' }
-        ];
-      case 'admin':
-        return [
-          { title: 'User Management', icon: Users, color: 'bg-blue-500', href: '#' },
-          { title: 'Analytics', icon: BarChart3, color: 'bg-green-500', href: '#' },
-          { title: 'System Settings', icon: Settings, color: 'bg-yellow-500', href: '#' },
-          { title: 'Support Tickets', icon: MessageSquare, color: 'bg-purple-500', href: '#' }
-        ];
-      default:
-        return [];
-    }
-  };
-
-  if (!user) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${
-        isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
-      }`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className={`mt-4 ${isDarkMode ? 'text-white' : 'text-gray-600'}`}>Loading...</p>
+  const renderFarmerDashboard = () => (
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`w-16 h-16 rounded-full gradient-green flex items-center justify-center`}>
+            <span className="text-3xl">🌾</span>
+          </div>
+          <div>
+            <h1 className={`text-2xl font-bold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {t.welcomeBack}, {user?.name || 'Farmer'}!
+            </h1>
+            <p className={`${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              {language === 'en' ? 'Manage your farm and connect with buyers' : 'നിങ്ങളുടെ കൃഷിസ്ഥലം നിയന്ത്രിക്കുക, വാങ്ങുന്നവരുമായി ബന്ധപ്പെടുക'}
+            </p>
+          </div>
         </div>
       </div>
-    );
-  }
+
+      {/* Quick Stats */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Farm Size' : 'കൃഷിസ്ഥല വലുപ്പം'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {user?.farmSize || 0} {language === 'en' ? 'acres' : 'ഏക്കർ'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Crops Grown' : 'നടുന്ന വിളകൾ'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {user?.crops?.length || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+              <Star className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Rating' : 'റേറ്റിംഗ്'}
+              </p>
+              <div className="flex items-center gap-2">
+                <RatingSystem rating={4.5} totalRatings={23} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <h2 className={`text-xl font-bold mb-4 ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          {t.quickActions}
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button className={`p-4 rounded-xl border-2 border-green-200 hover:border-green-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-green-50 hover:bg-green-100'
+          }`}>
+            <MessageSquare className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Ask AI Assistant' : 'AI അസിസ്റ്റന്റിനോട് ചോദിക്കുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-blue-200 hover:border-blue-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-50 hover:bg-blue-100'
+          }`}>
+            <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Find Buyers' : 'വാങ്ങുന്നവരെ കണ്ടെത്തുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-orange-200 hover:border-orange-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-orange-50 hover:bg-orange-100'
+          }`}>
+            <Calendar className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Crop Calendar' : 'വിള കലണ്ടർ'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-purple-50 hover:bg-purple-100'
+          }`}>
+            <TrendingUp className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Market Prices' : 'മാർക്കറ്റ് വിലകൾ'}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      {/* Recent Activities */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <h2 className={`text-xl font-bold mb-4 ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          {t.recentActivities}
+        </h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+            <CheckCircle className="w-6 h-6 text-green-600" />
+            <div>
+              <p className={`font-medium ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {language === 'en' ? 'Rice harvest completed successfully' : 'അരി വിളവെടുപ്പ് വിജയകരമായി പൂർത്തിയാക്കി'}
+              </p>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? '2 hours ago' : '2 മണിക്കൂർ മുമ്പ്'}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+            <Users className="w-6 h-6 text-blue-600" />
+            <div>
+              <p className={`font-medium ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {language === 'en' ? 'New buyer inquiry received' : 'പുതിയ വാങ്ങുന്നവരുടെ അന്വേഷണം ലഭിച്ചു'}
+              </p>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? '1 day ago' : '1 ദിവസം മുമ്പ്'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderRetailerDashboard = () => (
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`w-16 h-16 rounded-full gradient-green flex items-center justify-center`}>
+            <span className="text-3xl">🏪</span>
+          </div>
+          <div>
+            <h1 className={`text-2xl font-bold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {t.welcomeBack}, {user?.businessName || 'Retailer'}!
+            </h1>
+            <p className={`${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              {language === 'en' ? 'Manage your business and source fresh produce' : 'നിങ്ങളുടെ ബിസിനസ് നിയന്ത്രിക്കുക, പുതിയ ഉൽപ്പന്നങ്ങൾ സ്രോതസ്സ് ചെയ്യുക'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Active Orders' : 'സജീവ ഓർഡറുകൾ'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                12
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Monthly Revenue' : 'മാസിക വരുമാനം'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                ₹45,000
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+              <Star className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Rating' : 'റേറ്റിംഗ്'}
+              </p>
+              <div className="flex items-center gap-2">
+                <RatingSystem rating={4.2} totalRatings={18} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <h2 className={`text-xl font-bold mb-4 ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          {t.quickActions}
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button className={`p-4 rounded-xl border-2 border-green-200 hover:border-green-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-green-50 hover:bg-green-100'
+          }`}>
+            <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Find Farmers' : 'കർഷകരെ കണ്ടെത്തുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-blue-200 hover:border-blue-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-50 hover:bg-blue-100'
+          }`}>
+            <Package className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Manage Inventory' : 'ഇൻവെന്ററി നിയന്ത്രിക്കുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-orange-200 hover:border-orange-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-orange-50 hover:bg-orange-100'
+          }`}>
+            <TrendingUp className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'View Analytics' : 'വിശകലനം കാണുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-purple-50 hover:bg-purple-100'
+          }`}>
+            <MessageSquare className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Customer Support' : 'ഉപഭോക്തൃ പിന്തുണ'}
+            </p>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLaborerDashboard = () => (
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`w-16 h-16 rounded-full gradient-green flex items-center justify-center`}>
+            <span className="text-3xl">👷</span>
+          </div>
+          <div>
+            <h1 className={`text-2xl font-bold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {t.welcomeBack}, {user?.name || 'Laborer'}!
+            </h1>
+            <p className={`${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              {language === 'en' ? 'Find work opportunities and showcase your skills' : 'ജോലി അവസരങ്ങൾ കണ്ടെത്തുക, നിങ്ങളുടെ കഴിവുകൾ പ്രദർശിപ്പിക്കുക'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+              <Wrench className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Skills' : 'കഴിവുകൾ'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {user?.skills?.length || 0}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <Clock className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Experience' : 'അനുഭവം'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {user?.experience || 0} {language === 'en' ? 'years' : 'വർഷം'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+              <Star className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Rating' : 'റേറ്റിംഗ്'}
+              </p>
+              <div className="flex items-center gap-2">
+                <RatingSystem rating={4.7} totalRatings={31} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Available Jobs */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <h2 className={`text-xl font-bold mb-4 ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          {t.availableJobs}
+        </h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+              <Wrench className="w-6 h-6 text-green-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className={`font-semibold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {language === 'en' ? 'Rice Harvesting - 5 days' : 'അരി വിളവെടുപ്പ് - 5 ദിവസം'}
+              </h3>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Near Thrissur, Kerala' : 'തൃശൂരിന് സമീപം, കേരളം'}
+              </p>
+              <p className={`text-sm font-medium text-green-600`}>
+                ₹800/day
+              </p>
+            </div>
+            <button className="btn btn-primary text-sm px-4 py-2">
+              {language === 'en' ? 'Apply' : 'അപേക്ഷിക്കുക'}
+            </button>
+          </div>
+          
+          <div className="flex items-center gap-4 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <Wrench className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className={`font-semibold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {language === 'en' ? 'Vegetable Planting - 3 days' : 'പച്ചക്കറി നടൽ - 3 ദിവസം'}
+              </h3>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Near Palakkad, Kerala' : 'പാലക്കാടിന് സമീപം, കേരളം'}
+              </p>
+              <p className={`text-sm font-medium text-blue-600`}>
+                ₹600/day
+              </p>
+            </div>
+            <button className="btn btn-primary text-sm px-4 py-2">
+              {language === 'en' ? 'Apply' : 'അപേക്ഷിക്കുക'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAdminDashboard = () => (
+    <div className="space-y-8">
+      {/* Welcome Section */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <div className="flex items-center gap-4 mb-4">
+          <div className={`w-16 h-16 rounded-full gradient-green flex items-center justify-center`}>
+            <span className="text-3xl">👨‍💼</span>
+          </div>
+          <div>
+            <h1 className={`text-2xl font-bold ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {t.welcomeBack}, {user?.username || 'Admin'}!
+            </h1>
+            <p className={`${
+              isDarkMode ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              {language === 'en' ? 'Manage the platform and support the community' : 'പ്ലാറ്റ്ഫോം നിയന്ത്രിക്കുക, കമ്മ്യൂണിറ്റിയെ പിന്തുണയ്ക്കുക'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* System Stats */}
+      <div className="grid md:grid-cols-4 gap-6">
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+              <Users className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Total Users' : 'മൊത്തം ഉപയോക്താക്കൾ'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {stats.totalUsers.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Active Users' : 'സജീവ ഉപയോക്താക്കൾ'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {stats.activeUsers.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center">
+              <Package className="w-6 h-6 text-orange-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Transactions' : 'ഇടപാടുകൾ'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                {stats.totalTransactions.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className={`p-6 rounded-xl ${
+          isDarkMode ? 'bg-gray-800' : 'bg-white'
+        } shadow-lg`}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-purple-600" />
+            </div>
+            <div>
+              <p className={`text-sm ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                {language === 'en' ? 'Platform Revenue' : 'പ്ലാറ്റ്ഫോം വരുമാനം'}
+              </p>
+              <p className={`text-2xl font-bold ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                ₹{stats.revenue.toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Actions */}
+      <div className={`p-6 rounded-2xl ${
+        isDarkMode ? 'bg-gray-800' : 'bg-white'
+      } shadow-lg`}>
+        <h2 className={`text-xl font-bold mb-4 ${
+          isDarkMode ? 'text-white' : 'text-gray-900'
+        }`}>
+          {language === 'en' ? 'Admin Actions' : 'അഡ്മിൻ പ്രവർത്തനങ്ങൾ'}
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button className={`p-4 rounded-xl border-2 border-green-200 hover:border-green-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-green-50 hover:bg-green-100'
+          }`}>
+            <Users className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Manage Users' : 'ഉപയോക്താക്കളെ നിയന്ത്രിക്കുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-blue-200 hover:border-blue-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-blue-50 hover:bg-blue-100'
+          }`}>
+            <BarChart3 className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'View Reports' : 'റിപ്പോർട്ടുകൾ കാണുക'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-orange-200 hover:border-orange-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-orange-50 hover:bg-orange-100'
+          }`}>
+            <Settings className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'System Settings' : 'സിസ്റ്റം ക്രമീകരണങ്ങൾ'}
+            </p>
+          </button>
+          
+          <button className={`p-4 rounded-xl border-2 border-purple-200 hover:border-purple-400 transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-purple-50 hover:bg-purple-100'
+          }`}>
+            <MessageSquare className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+            <p className={`text-sm font-medium ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              {language === 'en' ? 'Support Center' : 'പിന്തുണാ കേന്ദ്രം'}
+            </p>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderDashboard = () => {
+    if (!user) return null;
+
+    switch (user.role) {
+      case 'farmer':
+        return renderFarmerDashboard();
+      case 'retailer':
+        return renderRetailerDashboard();
+      case 'laborer':
+        return renderLaborerDashboard();
+      case 'admin':
+        return renderAdminDashboard();
+      default:
+        return renderFarmerDashboard();
+    }
+  };
 
   return (
     <div className={`min-h-screen py-8 ${
       isDarkMode ? 'bg-gray-900' : 'bg-gray-50'
     }`}>
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="text-4xl">{getRoleIcon(user.role)}</div>
-            <div>
-              <h1 className={`text-3xl font-bold ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                Welcome back, {user.name}!
-              </h1>
-              <p className={`text-lg ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                {user.role.charAt(0).toUpperCase() + user.role.slice(1)} Dashboard
-              </p>
-            </div>
-          </div>
-          
-          <div className={`flex items-center gap-6 p-4 rounded-lg ${
-            isDarkMode ? 'bg-gray-800' : 'bg-white'
-          }`}>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-gray-400" />
-              <span className={`text-sm ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                {user.location?.state}, {user.location?.district}
-              </span>
-            </div>
-            {user.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="w-5 h-5 text-gray-400" />
-                <span className={`text-sm ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  {user.phone}
-                </span>
-              </div>
-            )}
-            {user.email && (
-              <div className="flex items-center gap-2">
-                <Mail className="w-5 h-5 text-gray-400" />
-                <span className={`text-sm ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-600'
-                }`}>
-                  {user.email}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {getDashboardCards().map((card, index) => (
-            <div
-              key={index}
-              className={`p-6 rounded-lg border ${
-                isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-sm font-medium ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    {card.title}
-                  </p>
-                  <p className={`text-2xl font-bold ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {card.value}
-                  </p>
-                </div>
-                <card.icon className={`w-8 h-8 ${card.color}`} />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-2">
-            <h2 className={`text-xl font-semibold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {getQuickActions().map((action, index) => (
-                <a
-                  key={index}
-                  href={action.href}
-                  className={`p-6 rounded-lg border text-center transition-colors ${
-                    isDarkMode 
-                      ? 'bg-gray-800 border-gray-700 hover:border-gray-600' 
-                      : 'bg-white border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <div className={`w-12 h-12 ${action.color} rounded-lg flex items-center justify-center mx-auto mb-3`}>
-                    <action.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <p className={`text-sm font-medium ${
-                    isDarkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {action.title}
-                  </p>
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Activities */}
-          <div>
-            <h2 className={`text-xl font-semibold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Recent Activities
-            </h2>
-            <div className={`space-y-4 ${
-              isDarkMode ? 'bg-gray-800' : 'bg-white'
-            } p-6 rounded-lg border ${
-              isDarkMode ? 'border-gray-700' : 'border-gray-200'
-            }`}>
-              {stats.recentActivities?.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500'
-                  }`} />
-                  <div className="flex-1">
-                    <p className={`text-sm ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      {activity.action}
-                    </p>
-                    <p className={`text-xs ${
-                      isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                    }`}>
-                      {activity.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Role-specific additional content */}
-        {user.role === 'farmer' && (
-          <div className="mt-8">
-            <h2 className={`text-xl font-semibold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Farming Tips
-            </h2>
-            <div className={`p-6 rounded-lg border ${
-              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-            }`}>
-              <p className={`${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                💡 <strong>Today's Tip:</strong> Make sure to water your crops early in the morning 
-                to prevent evaporation and ensure maximum absorption. Check the weather forecast 
-                before planning your irrigation schedule.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {user.role === 'retailer' && (
-          <div className="mt-8">
-            <h2 className={`text-xl font-semibold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Market Insights
-            </h2>
-            <div className={`p-6 rounded-lg border ${
-              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-            }`}>
-              <p className={`${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                📈 <strong>Market Update:</strong> Rice prices are up 5% this week due to increased demand. 
-                Consider adjusting your inventory and pricing strategy accordingly.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {user.role === 'laborer' && (
-          <div className="mt-8">
-            <h2 className={`text-xl font-semibold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              Available Jobs
-            </h2>
-            <div className={`p-6 rounded-lg border ${
-              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-            }`}>
-              <p className={`${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                🔍 <strong>Job Alert:</strong> There are {stats.availableJobs} new job opportunities 
-                in your area. Check the job board to find work that matches your skills and schedule.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {user.role === 'admin' && (
-          <div className="mt-8">
-            <h2 className={`text-xl font-semibold mb-4 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              System Status
-            </h2>
-            <div className={`p-6 rounded-lg border ${
-              isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-            }`}>
-              <p className={`${
-                isDarkMode ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                ⚡ <strong>System Health:</strong> All systems are running smoothly. 
-                {stats.pendingRequests} pending requests need your attention. 
-                Server response time is optimal.
-              </p>
-            </div>
-          </div>
-        )}
+      <div className="container">
+        {renderDashboard()}
       </div>
     </div>
   );
