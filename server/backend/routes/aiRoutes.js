@@ -90,10 +90,8 @@ router.post('/chat', aiLimiter, authMiddleware, validateChatInput, async (req, r
 
 
     const { message, language = 'en' } = req.body;
-    const userId = req.user.userId; // Using your auth structure
-
-    // Log user message
-    logConversation(userId, 'farmer', message);
+    const userId = req.user.userId;
+    const username = req.user.username || userId.toString();
 
     const aiRequest = {
       user_id: userId.toString(),
@@ -103,12 +101,12 @@ router.post('/chat', aiLimiter, authMiddleware, validateChatInput, async (req, r
 
     const aiResponse = await callAIService('/chat', aiRequest);
 
-    // Log bot response
+    // Log conversation (prompt and response)
     if (aiResponse && aiResponse.response) {
-      logConversation(userId, 'bot', aiResponse.response);
+      logConversation(username, message, aiResponse.response, language);
     }
 
-    console.log(`Chat - User: ${userId}, Intent: ${aiResponse.intent}, Language: ${language}`);
+    console.log(`Chat - User: ${username}, Intent: ${aiResponse.intent}, Language: ${language}`);
 
     res.json({
       success: true,

@@ -12,6 +12,7 @@ const farmerRoutes = require("./routes/farmerRoutes")
 const laborerRoutes = require("./routes/laborerRoutes")
 const aiRoutes = require("./routes/aiRoutes") // AI routes
 const contactRoutes = require("./routes/contactRoutes");
+const jiomartRoutes = require("./routes/jiomartRoutes");
 
 const app = express()
 
@@ -39,6 +40,7 @@ app.use("/farmers", farmerRoutes)
 app.use("/laborers", laborerRoutes)
 app.use("/ai", aiRoutes) // AI routes
 app.use("/contact", contactRoutes); // Contact Us & IVR endpoints
+app.use("/jiomart", jiomartRoutes); // JioMart recommendation endpoints
 
 // 404 handler
 app.use("*", (req, res) => {

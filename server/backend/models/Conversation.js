@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const conversationSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  role: { type: String, enum: ['farmer', 'bot'], required: true },
-  message: { type: String, required: true },
+  username: { type: String, required: true },
+  prompt: { type: String, required: true }, // User's message
+  response: { type: String, required: true }, // Bot's reply
+  language: { type: String, default: 'en' },
   timestamp: { type: Date, default: Date.now }
 });
 
