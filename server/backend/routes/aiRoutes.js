@@ -1,8 +1,10 @@
+
 const express = require('express');
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const { authMiddleware } = require('../middlewares/authMiddleware');
+const { logConversation } = require('../services/conversationService');
 
 const router = express.Router();
 
@@ -86,8 +88,12 @@ router.post('/chat', aiLimiter, authMiddleware, validateChatInput, async (req, r
       });
     }
 
+
     const { message, language = 'en' } = req.body;
     const userId = req.user.userId; // Using your auth structure
+
+    // Log user message
+    logConversation(userId, 'farmer', message);
 
     const aiRequest = {
       user_id: userId.toString(),
@@ -96,6 +102,11 @@ router.post('/chat', aiLimiter, authMiddleware, validateChatInput, async (req, r
     };
 
     const aiResponse = await callAIService('/chat', aiRequest);
+
+    // Log bot response
+    if (aiResponse && aiResponse.response) {
+      logConversation(userId, 'bot', aiResponse.response);
+    }
 
     console.log(`Chat - User: ${userId}, Intent: ${aiResponse.intent}, Language: ${language}`);
 

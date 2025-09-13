@@ -11,6 +11,7 @@ const authRoutes = require("./routes/authRoutes")
 const farmerRoutes = require("./routes/farmerRoutes")
 const laborerRoutes = require("./routes/laborerRoutes")
 const aiRoutes = require("./routes/aiRoutes") // AI routes
+const contactRoutes = require("./routes/contactRoutes");
 
 const app = express()
 
@@ -37,6 +38,7 @@ app.use("/auth", authRoutes)
 app.use("/farmers", farmerRoutes)
 app.use("/laborers", laborerRoutes)
 app.use("/ai", aiRoutes) // AI routes
+app.use("/contact", contactRoutes); // Contact Us & IVR endpoints
 
 // 404 handler
 app.use("*", (req, res) => {
