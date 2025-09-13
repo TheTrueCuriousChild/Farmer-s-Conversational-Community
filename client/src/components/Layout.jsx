@@ -68,7 +68,7 @@ const Layout = ({ children }) => {
                     location.pathname === item.path
                       ? 'text-green-600 bg-green-50 dark:bg-green-900 dark:text-green-300'
                       : isDarkMode 
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
@@ -119,7 +119,7 @@ const Layout = ({ children }) => {
                     to="/dashboard"
                     className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isDarkMode 
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
@@ -144,7 +144,7 @@ const Layout = ({ children }) => {
                     to="/login"
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       isDarkMode 
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
@@ -189,7 +189,7 @@ const Layout = ({ children }) => {
                     location.pathname === item.path
                       ? 'text-green-600 bg-green-50 dark:bg-green-900 dark:text-green-300'
                       : isDarkMode 
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 >
@@ -205,7 +205,7 @@ const Layout = ({ children }) => {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isDarkMode 
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
@@ -231,7 +231,7 @@ const Layout = ({ children }) => {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`block w-full text-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                       isDarkMode 
-                        ? 'text-gray-300 hover:text-white hover:bg-gray-700' 
+                        ? 'text-gray-200 hover:text-white hover:bg-gray-700' 
                         : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >

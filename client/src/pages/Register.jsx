@@ -155,9 +155,32 @@ const Register = () => {
 
   const validateStep = (stepNumber) => {
     if (stepNumber === 1) {
-      return formData.role && formData.name && formData.phone && formData.password;
+      // Only check if role is selected
+      return formData.role;
     }
-    // Add more validation as needed
+    if (stepNumber === 2) {
+      // Check basic info fields
+      return formData.name && formData.phone;
+    }
+    if (stepNumber === 3) {
+      // Check password fields
+      return formData.password && formData.confirmPassword && formData.password === formData.confirmPassword;
+    }
+    if (stepNumber === 4) {
+      // Check role-specific required fields
+      if (formData.role === 'farmer') {
+        return formData.farmAddress;
+      }
+      if (formData.role === 'retailer') {
+        return formData.businessName && formData.businessAddress.street && formData.businessAddress.city && formData.businessAddress.state;
+      }
+      if (formData.role === 'laborer') {
+        return formData.skills.length > 0 && formData.location.address;
+      }
+      if (formData.role === 'admin') {
+        return formData.username;
+      }
+    }
     return true;
   };
 
@@ -165,7 +188,29 @@ const Register = () => {
     if (validateStep(step)) {
       setStep(prev => prev + 1);
     } else {
-      toast.error(language === 'en' ? 'Please fill in all required fields' : 'എല്ലാ ആവശ്യമായ ഫീൽഡുകളും പൂരിപ്പിക്കുക');
+      let errorMessage = '';
+      if (step === 1) {
+        errorMessage = language === 'en' ? 'Please select a role' : 'ഒരു പങ്കാളിത്തം തിരഞ്ഞെടുക്കുക';
+      } else if (step === 2) {
+        errorMessage = language === 'en' ? 'Please fill in your name and phone number' : 'നിങ്ങളുടെ പേരും ഫോൺ നമ്പറും നൽകുക';
+      } else if (step === 3) {
+        if (!formData.password || !formData.confirmPassword) {
+          errorMessage = language === 'en' ? 'Please enter and confirm your password' : 'പാസ്‌വേഡ് നൽകുകയും സ്ഥിരീകരിക്കുകയും ചെയ്യുക';
+        } else if (formData.password !== formData.confirmPassword) {
+          errorMessage = language === 'en' ? 'Passwords do not match' : 'പാസ്‌വേഡുകൾ പൊരുത്തപ്പെടുന്നില്ല';
+        }
+      } else if (step === 4) {
+        if (formData.role === 'farmer') {
+          errorMessage = language === 'en' ? 'Please enter your farm address' : 'നിങ്ങളുടെ കൃഷിസ്ഥല വിലാസം നൽകുക';
+        } else if (formData.role === 'retailer') {
+          errorMessage = language === 'en' ? 'Please fill in business details' : 'ബിസിനസ് വിവരങ്ങൾ പൂരിപ്പിക്കുക';
+        } else if (formData.role === 'laborer') {
+          errorMessage = language === 'en' ? 'Please select your skills and enter address' : 'നിങ്ങളുടെ കഴിവുകൾ തിരഞ്ഞെടുക്കുകയും വിലാസം നൽകുകയും ചെയ്യുക';
+        } else if (formData.role === 'admin') {
+          errorMessage = language === 'en' ? 'Please enter a username' : 'ഒരു യൂസർനെയ് നൽകുക';
+        }
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -250,19 +295,19 @@ const Register = () => {
       
       <div className="grid md:grid-cols-2 gap-6">
         {Object.entries(roleConfigs).map(([role, config]) => (
-          <button
-            key={role}
-            type="button"
-            onClick={() => setFormData(prev => ({ ...prev, role }))}
-            className={`p-6 rounded-xl border-2 transition-all duration-300 text-left ${
-              formData.role === role
-                ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
-                : 'border-gray-200 dark:border-gray-700 hover:border-green-300'
-            }`}
-          >
+            <button
+              key={role}
+              type="button"
+              onClick={() => setFormData(prev => ({ ...prev, role }))}
+              className={`p-6 rounded-xl border-2 transition-all duration-300 text-left ${
+                formData.role === role
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-lg'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-green-300 hover:shadow-md'
+              }`}
+            >
             <div className="flex items-center gap-4">
               <span className="text-4xl">{config.icon}</span>
-              <div>
+              <div className="flex-1">
                 <h3 className={`text-xl font-bold ${
                   isDarkMode ? 'text-white' : 'text-gray-900'
                 }`}>
@@ -277,6 +322,13 @@ const Register = () => {
                   }
                 </p>
               </div>
+              {formData.role === role && (
+                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
             </div>
           </button>
         ))}

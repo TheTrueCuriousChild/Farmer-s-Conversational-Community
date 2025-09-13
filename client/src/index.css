@@ -405,7 +405,7 @@ body {
 }
 
 .dark .text-gray-400 {
-  color: #718096;
+  color: #cbd5e0;
 }
 
 .text-gray-500 {
@@ -413,7 +413,7 @@ body {
 }
 
 .dark .text-gray-500 {
-  color: #a0aec0;
+  color: #e2e8f0;
 }
 
 .text-gray-600 {
@@ -421,7 +421,7 @@ body {
 }
 
 .dark .text-gray-600 {
-  color: #a0aec0;
+  color: #e2e8f0;
 }
 
 .text-gray-700 {
@@ -429,7 +429,7 @@ body {
 }
 
 .dark .text-gray-700 {
-  color: #e2e8f0;
+  color: #f7fafc;
 }
 
 .text-gray-900 {
@@ -437,7 +437,7 @@ body {
 }
 
 .dark .text-gray-900 {
-  color: #f7fafc;
+  color: #ffffff;
 }
 
 .text-green-600 {
@@ -446,6 +446,47 @@ body {
 
 .text-green-700 {
   color: var(--primary-green-dark);
+}
+
+/* Additional text colors for better dark mode visibility */
+.text-blue-600 {
+  color: #3182ce;
+}
+
+.dark .text-blue-600 {
+  color: #63b3ed;
+}
+
+.text-purple-600 {
+  color: #805ad5;
+}
+
+.dark .text-purple-600 {
+  color: #b794f6;
+}
+
+.text-red-600 {
+  color: #e53e3e;
+}
+
+.dark .text-red-600 {
+  color: #fc8181;
+}
+
+.text-yellow-600 {
+  color: #d69e2e;
+}
+
+.dark .text-yellow-600 {
+  color: #f6e05e;
+}
+
+.text-orange-600 {
+  color: #dd6b20;
+}
+
+.dark .text-orange-600 {
+  color: #fbb6ce;
 }
 
 .text-sm {
