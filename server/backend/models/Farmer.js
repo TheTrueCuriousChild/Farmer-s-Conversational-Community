@@ -46,6 +46,7 @@ const farmerSchema = new mongoose.Schema(
         required: true,
       },
     },
+    isActive: { type: Boolean, default: true },
     farmSize: {
       type: Number,
       min: 0,
