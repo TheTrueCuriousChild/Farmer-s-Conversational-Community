@@ -309,7 +309,7 @@ const Register = () => {
               <span className="text-4xl">{config.icon}</span>
               <div className="flex-1">
                 <h3 className={`text-xl font-bold ${
-                  isDarkMode ? 'text-white' : 'text-gray-900'
+                  isDarkMode ? 'text-black' : 'text-gray-900'
                 }`}>
                   {config.title}
                 </h3>
