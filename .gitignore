@@ -8,3 +8,4 @@ client/node_modules
 server/backend/node_modules
 pycache
 data
+client/node_modules

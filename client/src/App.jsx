@@ -1,80 +1,68 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-// Components
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
+import DiseaseChecker from './pages/DiseaseChecker';
+import FarmPlanning from './pages/FarmPlanning';
+import CommunityChat from './pages/CommunityChat';
+import RetailMarket from './pages/RetailMarket';
+import ProduceGallery from './pages/ProduceGallery';
+import EducationHub from './pages/EducationHub';
+import QueryPage from './pages/QueryPage';
+import GovernmentNotices from './pages/GovernmentNotices';
+import AdminDashboard from './pages/AdminDashboard';
+import FarmerDashboard from './pages/FarmerDashboard';
+import RetailerDashboard from './pages/RetailerDashboard';
+import LabourerDashboard from './pages/LabourerDashboard';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Contact from './pages/Contact';
-import Chatbot from './components/Chatbot';
-
-// Context
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { ThemeProvider, useTheme } from './context/ThemeContext';
-import { LanguageProvider, useLanguage } from './context/LanguageContext';
-
-// Styles
-import './App.css';
-
-function AppContent() {
-  const { user, loading } = useAuth();
-  const { isDarkMode } = useTheme();
-
-  if (loading) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto"></div>
-          <p className={`mt-4 ${isDarkMode ? 'text-white' : 'text-gray-600'}`}>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
-          <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
-          <Route 
-            path="/dashboard" 
-            element={user ? <Dashboard /> : <Navigate to="/login" />} 
-          />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/chatbot" element={<Chatbot />} />
-        </Routes>
-      </Layout>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={isDarkMode ? 'dark' : 'light'}
-      />
-    </Router>
-  );
-}
+import Signup from './pages/Signup';
+import MarketPlace from './pages/MarketPlace';
+import CalendarPage from './pages/Calendar';
+import InformationLedger from './pages/InformationLedger';
+import ChatbotPage from './pages/ChatbotPage';
+import CallingAgent from './pages/CallingAgent';
+import WhatsAppAgent from './pages/WhatsAppAgent';
+import LegalAid from './pages/LegalAid';
+import Profile from './pages/Profile';
+import './styles/global.css';
 
 function App() {
   return (
-    <LanguageProvider>
-      <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
-      </ThemeProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/disease-checker" element={<DiseaseChecker />} />
+              <Route path="/farm-planning" element={<FarmPlanning />} />
+              <Route path="/community-chat" element={<CommunityChat />} />
+              <Route path="/retail-market" element={<RetailMarket />} />
+              <Route path="/market-place" element={<MarketPlace />} />
+              <Route path="/produce-gallery" element={<ProduceGallery />} />
+              <Route path="/education-hub" element={<EducationHub />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/information-ledger" element={<InformationLedger />} />
+              <Route path="/chatbot" element={<ChatbotPage />} />
+              <Route path="/calling-agent" element={<CallingAgent />} />
+              <Route path="/whatsapp-agent" element={<WhatsAppAgent />} />
+              <Route path="/legal-aid" element={<LegalAid />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/query-page" element={<QueryPage />} />
+              <Route path="/government-notices" element={<GovernmentNotices />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
+              <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
+              <Route path="/retailer-dashboard" element={<RetailerDashboard />} />
+              <Route path="/labourer-dashboard" element={<LabourerDashboard />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 
