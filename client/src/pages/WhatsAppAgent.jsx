@@ -4,7 +4,7 @@ import { getTranslation } from '../utils/translations';
 
 const WhatsAppAgent = () => {
   const { language } = useLanguage();
-  const sampleLink = 'https://wa.me/919876543210?text=Hello%20KrishiSeva%20Agent';
+  const sampleLink = 'https://wa.me/919082924664?text=Hello%20KrishiSeva%20Agent';
   return (
     <div style={{ padding: 'var(--spacing-xxl) 0' }}>
       <div className="container">
