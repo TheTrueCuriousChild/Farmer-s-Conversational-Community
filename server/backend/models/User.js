@@ -35,8 +35,8 @@ const userSchema = new mongoose.Schema(
 
     // Basic Location Information (common for all users)
     location: {
-      state: { type: String, required: true },
-      district: { type: String, required: true },
+      state: { type: String, required: false },
+      district: { type: String, required: false },
       village: { type: String },
       pincode: { type: String },
       coordinates: {

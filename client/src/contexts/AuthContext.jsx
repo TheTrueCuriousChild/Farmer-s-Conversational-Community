@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
 
   // Use relative path during development to leverage Vite's proxy.
   // VITE_API_BASE_URL will be used in production builds.
-  const API_URL = import.meta.env.VITE_API_BASE_URL || '';
+  const API_URL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -58,22 +58,39 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userData) => {
-  const response = await fetch(`http://localhost:5000/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
-  });
+    try {
+      const response = await fetch('http://localhost:5000/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
 
-  const result = await response.json();
-  console.log("Signup response from backend:", result); // 👈 Add this
+      const result = await response.json();
+      console.log("Signup response from backend:", result);
 
-  if (result.ok) {
-    handleAuthSuccess(result.data||result);
-  } else {
-    throw new Error(result.message || 'Signup failed');
-  }
-};
+      if (!response.ok) {
+        // If backend sends 400/500 status
+        console.error('Error from backend:', result);
+        throw new Error(result.message || 'Signup failed');
+      }
 
+      console.log('User registered successfully:', result);
+      
+      // Check if the result indicates success and handle authentication
+      if (result.success) {
+        handleAuthSuccess(result.data || result);
+        return result;
+      } else {
+        throw new Error(result.message || 'Signup failed');
+      }
+
+    } catch (error) {
+      console.error('Signup error:', error.message);
+      throw error; // Re-throw the error so calling code can handle it
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem('token');

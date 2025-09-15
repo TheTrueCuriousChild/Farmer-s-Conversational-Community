@@ -150,7 +150,7 @@ const Signup = () => {
 
   if (formData.role === 'farmer') {
     const submitData = {
-      ...baseData,
+      baseData,
       name: formData.name.trim(),
       phone: formData.phone.trim(),
       farmLocation: {
