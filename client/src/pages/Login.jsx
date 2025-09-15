@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import { getTranslation } from '../utils/translations';
 
 const Login = () => {
   const { language } = useLanguage();
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
+    identifier: '', // Can be email or phone
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     setFormData({
@@ -22,42 +24,22 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // TODO: API Endpoint: POST /api/auth/login
-    console.log('Login attempt:', formData);
-    
-    // Mock login - simulate API call
-    setTimeout(() => {
-      // Mock successful login
-      const mockUser = {
-        id: 1,
-        email: formData.email,
-        role: 'farmer', // This would come from API
-        name: 'John Doe'
+    setError('');
+    try {
+      const { identifier, password } = formData;
+      // Simple check to see if it's a phone number or email
+      const isPhone = /^\d{10,}$/.test(identifier);
+      const credentials = {
+        password,
+        ...(isPhone ? { phone: identifier } : { email: identifier })
       };
-      
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      // Redirect based on role
-      switch (mockUser.role) {
-        case 'farmer':
-          navigate('/farmer-dashboard');
-          break;
-        case 'retailer':
-          navigate('/retailer-dashboard');
-          break;
-        case 'labourer':
-          navigate('/labourer-dashboard');
-          break;
-        case 'admin':
-          navigate('/admin-dashboard');
-          break;
-        default:
-          navigate('/');
-      }
-      
+      await login(credentials);
+      // Navigation is handled by AuthContext
+    } catch (err) {
+      setError(err.message || 'Failed to login. Please check your credentials.');
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const pageStyle = {
@@ -106,17 +88,23 @@ const Login = () => {
             </p>
           </div>
 
+          {error && (
+            <div style={{ color: 'var(--color-danger)', backgroundColor: 'var(--color-danger-light)', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--spacing-lg)', textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 'var(--spacing-lg)' }}>
               <label style={{ display: 'block', marginBottom: 'var(--spacing-xs)', fontWeight: '500' }}>
-                {getTranslation('email', language)}
+                {getTranslation('email', language)} / {getTranslation('phone', language)}
               </label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                name="identifier"
+                value={formData.identifier}
                 onChange={handleInputChange}
-                placeholder="Enter your email"
+                placeholder="Enter your email or phone number"
                 required
                 style={{ width: '100%' }}
               />
@@ -146,7 +134,7 @@ const Login = () => {
               {isLoading ? (
                 <>
                   <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
-                  Signing In...
+                  &nbsp;Signing In...
                 </>
               ) : (
                 getTranslation('login', language)
@@ -173,5 +161,3 @@ const Login = () => {
 };
 
 export default Login;
-
-

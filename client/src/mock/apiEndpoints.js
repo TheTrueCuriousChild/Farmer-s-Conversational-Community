@@ -5,10 +5,7 @@ export const API_ENDPOINTS = {
   // Authentication
   AUTH: {
     LOGIN: 'POST /api/auth/login',
-    REGISTER_FARMER: 'POST /api/register/farmer',
-    REGISTER_RETAILER: 'POST /api/register/retailer',
-    REGISTER_LABOURER: 'POST /api/register/labourer',
-    REGISTER_ADMIN: 'POST /api/register/admin',
+    REGISTER: 'POST /api/auth/register',
     LOGOUT: 'POST /api/auth/logout',
     REFRESH_TOKEN: 'POST /api/auth/refresh'
   },
@@ -215,5 +212,3 @@ export const ERROR_RESPONSES = {
     errors: ['An unexpected error occurred']
   }
 };
-
-

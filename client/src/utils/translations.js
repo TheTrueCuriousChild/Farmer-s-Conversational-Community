@@ -1,5 +1,3 @@
-import LegalDocument from "../pages/LegalAid";
-
 // Translation system for KrishiSeva
 export const translations = {
   en: {
@@ -172,16 +170,18 @@ export const translations = {
     name: 'Name',
     phone: 'Phone',
     role: 'Role',
+    state: 'State',
+    district: 'District',
     farmer: 'Farmer',
     retailer: 'Retailer',
-    labourer: 'Labourer',
+    laborer: 'Laborer',
     admin: 'Admin',
     
     // Roles
     roles: {
       farmer: 'Farmer',
       retailer: 'Retailer',
-      labourer: 'Labourer',
+      laborer: 'Laborer',
       admin: 'Administrator'
     }
   },
@@ -356,16 +356,18 @@ export const translations = {
     name: 'नाम',
     phone: 'फोन',
     role: 'भूमिका',
+    state: 'राज्य',
+    district: 'ज़िला',
     farmer: 'किसान',
     retailer: 'खुदरा विक्रेता',
-    labourer: 'मजदूर',
+    laborer: 'मजदूर',
     admin: 'एडमिन',
     
     // Roles
     roles: {
       farmer: 'किसान',
       retailer: 'खुदरा विक्रेता',
-      labourer: 'मजदूर',
+      laborer: 'मजदूर',
       admin: 'प्रशासक'
     }
   },
@@ -540,16 +542,18 @@ export const translations = {
     name: 'പേര്',
     phone: 'ഫോൺ',
     role: 'റോൾ',
+    state: 'സംസ്ഥാനം',
+    district: 'ജില്ല',
     farmer: 'കർഷകൻ',
     retailer: 'റീടെയിൽ വിൽപ്പനക്കാരൻ',
-    labourer: 'തൊഴിലാളി',
+    laborer: 'തൊഴിലാളി',
     admin: 'അഡ്മിൻ',
     
     // Roles
     roles: {
       farmer: 'കർഷകൻ',
       retailer: 'റീടെയിൽ വിൽപ്പനക്കാരൻ',
-      labourer: 'തൊഴിലാളി',
+      laborer: 'തൊഴിലാളി',
       admin: 'അഡ്മിനിസ്ട്രേറ്റർ'
     }
   }
@@ -569,5 +573,3 @@ export const getTranslation = (key, language = 'en') => {
   
   return value || key;
 };
-
-

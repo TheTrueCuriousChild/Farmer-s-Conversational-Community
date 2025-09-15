@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import DiseaseChecker from './pages/DiseaseChecker';
@@ -33,33 +34,37 @@ function App() {
     <ThemeProvider>
       <LanguageProvider>
         <Router>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/disease-checker" element={<DiseaseChecker />} />
-              <Route path="/farm-planning" element={<FarmPlanning />} />
-              <Route path="/community-chat" element={<CommunityChat />} />
-              <Route path="/retail-market" element={<RetailMarket />} />
-              <Route path="/market-place" element={<MarketPlace />} />
-              <Route path="/produce-gallery" element={<ProduceGallery />} />
-              <Route path="/education-hub" element={<EducationHub />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/information-ledger" element={<InformationLedger />} />
-              <Route path="/chatbot" element={<ChatbotPage />} />
-              <Route path="/calling-agent" element={<CallingAgent />} />
-              <Route path="/whatsapp-agent" element={<WhatsAppAgent />} />
-              <Route path="/legal-aid" element={<LegalAid />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/query-page" element={<QueryPage />} />
-              <Route path="/government-notices" element={<GovernmentNotices />} />
-              <Route path="/admin-dashboard" element={<AdminDashboard />} />
-              <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
-              <Route path="/retailer-dashboard" element={<RetailerDashboard />} />
-              <Route path="/labourer-dashboard" element={<LabourerDashboard />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-            </Routes>
-          </Layout>
+          <AuthProvider>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/disease-checker" element={<DiseaseChecker />} />
+                <Route path="/farm-planning" element={<FarmPlanning />} />
+                <Route path="/community-chat" element={<CommunityChat />} />
+                <Route path="/retail-market" element={<RetailMarket />} />
+                <Route path="/market-place" element={<MarketPlace />} />
+                <Route path="/produce-gallery" element={<ProduceGallery />} />
+                <Route path="/education-hub" element={<EducationHub />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/information-ledger" element={<InformationLedger />} />
+                <Route path="/chatbot" element={<ChatbotPage />} />
+                <Route path="/calling-agent" element={<CallingAgent />} />
+                <Route path="/whatsapp-agent" element={<WhatsAppAgent />} />
+                <Route path="/legal-aid" element={<LegalAid />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/query-page" element={<QueryPage />} />
+                <Route path="/government-notices" element={<GovernmentNotices />} />
+                <Route path="/admin-dashboard" element={<AdminDashboard />} />
+                <Route path="/farmer-dashboard" element={<FarmerDashboard />} />
+                <Route path="/retailer-dashboard" element={<RetailerDashboard />} />
+                <Route path="/laborer-dashboard" element={<LabourerDashboard />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                {/* TODO: Create a ForgotPassword page */}
+                <Route path="/forgot-password" element={<div>Forgot Password Page</div>} />
+              </Routes>
+            </Layout>
+          </AuthProvider>
         </Router>
       </LanguageProvider>
     </ThemeProvider>

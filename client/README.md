@@ -114,14 +114,14 @@ client/
 │   ├── components/
 │   │   ├── Layout.jsx          # Main layout component
 │   │   ├── Chatbot.jsx         # AI chatbot interface
-│   │   └── RatingSystem.jsx    # Rating components
-│   ├── context/
+│   │   └── ...
+│   ├── contexts/
 │   │   ├── AuthContext.jsx     # Authentication context
 │   │   └── ThemeContext.jsx    # Theme management context
 │   ├── pages/
 │   │   ├── HomePage.jsx        # Landing page
 │   │   ├── Login.jsx           # Login page
-│   │   ├── Register.jsx        # Registration page
+│   │   ├── Signup.jsx          # Signup page
 │   │   ├── Dashboard.jsx       # Role-based dashboards
 │   │   └── Contact.jsx         # Contact and support page
 │   ├── App.jsx                 # Main app component
