@@ -140,7 +140,7 @@ client/
 Create a `.env` file in the client directory:
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:3000
 VITE_APP_NAME=KrishiSeva
 ```
 

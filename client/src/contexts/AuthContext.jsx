@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
@@ -58,19 +58,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userData) => {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    });
-    const result = await response.json();
+  const response = await fetch(`http://localhost:5000/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
 
-    if (result.success) {
-      handleAuthSuccess(result.data);
-    } else {
-      throw new Error(result.message || 'Signup failed');
-    }
-  };
+  const result = await response.json();
+  console.log("Signup response from backend:", result); // 👈 Add this
+
+  if (result.ok) {
+    handleAuthSuccess(result.data||result);
+  } else {
+    throw new Error(result.message || 'Signup failed');
+  }
+};
+
 
   const logout = () => {
     localStorage.removeItem('token');
