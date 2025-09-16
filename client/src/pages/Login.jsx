@@ -6,14 +6,15 @@ import { getTranslation } from '../utils/translations';
 
 const Login = () => {
   const { language } = useLanguage();
-  const { login } = useAuth();
+  const { login } = useAuth(); // use login from context
   const [formData, setFormData] = useState({
-    identifier: '', // Can be email or phone
+    identifier: '', // email or phone
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Handle input change
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -21,21 +22,26 @@ const Login = () => {
     });
   };
 
+  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
     try {
       const { identifier, password } = formData;
-      // Simple check to see if it's a phone number or email
-      const isPhone = /^\d{10,}$/.test(identifier);
+      const trimmed = identifier.trim();
+      const isPhone = /^\d{10,}$/.test(trimmed);
       const credentials = {
         password,
-        ...(isPhone ? { phone: identifier } : { email: identifier })
+        ...(isPhone ? { phone: trimmed } : { email: trimmed })
       };
-      await login(credentials);
-      // Navigation is handled by AuthContext
+
+      // Call login from AuthContext
+      await login(credentials); // ✅ handles setUser, token, redirect
+
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.message || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoading(false);
@@ -64,6 +70,7 @@ const Login = () => {
     <div style={pageStyle}>
       <div className="container">
         <div style={cardStyle}>
+          {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-xl)' }}>
             <div style={{
               width: '60px',
@@ -77,9 +84,7 @@ const Login = () => {
               color: 'var(--color-white)',
               fontSize: '1.5rem',
               fontWeight: 'bold'
-            }}>
-              KS
-            </div>
+            }}>KS</div>
             <h1 style={{ marginBottom: 'var(--spacing-sm)' }}>
               {getTranslation('login', language)}
             </h1>
@@ -88,12 +93,21 @@ const Login = () => {
             </p>
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div style={{ color: 'var(--color-danger)', backgroundColor: 'var(--color-danger-light)', padding: 'var(--spacing-md)', borderRadius: 'var(--radius-md)', marginBottom: 'var(--spacing-lg)', textAlign: 'center' }}>
+            <div style={{
+              color: 'var(--color-danger)',
+              backgroundColor: 'var(--color-danger-light)',
+              padding: 'var(--spacing-md)',
+              borderRadius: 'var(--radius-md)',
+              marginBottom: 'var(--spacing-lg)',
+              textAlign: 'center'
+            }}>
               {error}
             </div>
           )}
 
+          {/* Form */}
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 'var(--spacing-lg)' }}>
               <label style={{ display: 'block', marginBottom: 'var(--spacing-xs)', fontWeight: '500' }}>
@@ -142,6 +156,7 @@ const Login = () => {
             </button>
           </form>
 
+          {/* Footer Links */}
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--spacing-md)' }}>
               Don't have an account?{' '}
@@ -149,7 +164,6 @@ const Login = () => {
                 {getTranslation('signup', language)}
               </Link>
             </p>
-            
             <Link to="/forgot-password" style={{ color: 'var(--color-primary)', fontSize: '0.9rem' }}>
               Forgot your password?
             </Link>

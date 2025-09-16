@@ -6,6 +6,9 @@ const ChatbotPage = () => {
   const { language } = useLanguage();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+const [isRecording, setIsRecording] = useState(false);
+const [mediaRecorder, setMediaRecorder] = useState(null);
+const [audioChunks, setAudioChunks] = useState([]);
 
 const sendMessage = async (e) => {
   e.preventDefault();
@@ -45,7 +48,85 @@ const sendMessage = async (e) => {
     setMessages((prev) => [...prev, errorMsg]);
   }
 };
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
 
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) {
+        setAudioChunks((prev) => [...prev, e.data]);
+      }
+    };
+
+    recorder.onstop = () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+      sendVoiceToBackend(audioBlob);
+      setAudioChunks([]);
+    };
+
+    recorder.start();
+    setMediaRecorder(recorder);
+    setIsRecording(true);
+  } catch (err) {
+    console.error("Microphone error:", err);
+    alert("Microphone access denied!");
+  }
+};
+
+const stopRecording = () => {
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+    setIsRecording(false);
+  }
+};
+
+const sendVoiceToBackend = async (audioBlob) => {
+  const formData = new FormData();
+  formData.append("user_id", "farmer-123");
+  formData.append("audio_file", audioBlob, "voice.webm");
+  formData.append("language", language || "en");
+
+  setMessages((prev) => [
+    ...prev,
+    { id: Date.now(), sender: 'user', text: "🎤 Sent voice message..." }
+  ]);
+
+  try {
+    const res = await fetch("http://localhost:8000/chat/voice", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+
+    if (data.transcript) {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + 1, sender: 'user', text: `📝 ${data.transcript}` }
+      ]);
+    }
+
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now() + 2, sender: 'bot', text: data.text_response }
+    ]);
+
+    if (data.audio_response) {
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(data.audio_response), c => c.charCodeAt(0))],
+        { type: "audio/mp3" }
+      );
+      const audioUrl = URL.createObjectURL(audioBlob);
+      new Audio(audioUrl).play();
+    }
+  } catch (err) {
+    setMessages((prev) => [
+      ...prev,
+      { id: Date.now() + 3, sender: 'bot', text: "⚠️ Voice processing failed." }
+    ]);
+  }
+};
   return (
     <div style={{ padding: 'var(--spacing-xxl) 0' }}>
       <div className="container">
@@ -79,6 +160,14 @@ const sendMessage = async (e) => {
           </div>
           <form onSubmit={sendMessage} style={{ display: 'flex', gap: 8, padding: 'var(--spacing-md)', borderTop: '1px solid var(--color-border)' }}>
             <input value={input} onChange={(e) => setInput(e.target.value)} placeholder={getTranslation('chatbot.inputPlaceholder', language)} style={{ flex: 1 }} />
+            <button
+  type="button"
+  onClick={isRecording ? stopRecording : startRecording}
+  className="btn-secondary"
+>
+  {isRecording ? "⏹ Stop" : "🎤 Speak"}
+</button>
+
             <button className="btn-primary" type="submit">{getTranslation('submit', language)}</button>
           </form>
         </div>

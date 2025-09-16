@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    const response = await fetch(`${API_URL}/api/auth/login`, {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(credentials),
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userData) => {
-    const response = await fetch(`${API_URL}/api/auth/register`, {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
@@ -94,7 +94,17 @@ export const AuthProvider = ({ children }) => {
     navigate(dashboardPath);
   };
 
-  const value = { user, token, loading, login, signup, logout };
+  const value = {
+  user,
+  token,
+  loading,
+  login,
+  signup,
+  logout,
+  setUser, // ✅ Add this
+  setToken, // optional if you need to update token manually
+};
+
 
   return (
     <AuthContext.Provider value={value}>
