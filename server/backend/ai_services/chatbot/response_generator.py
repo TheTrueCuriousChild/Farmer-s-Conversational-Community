@@ -1,7 +1,14 @@
 import google.generativeai as genai
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Tuple
 import json
 import asyncio
+import re
+import speech_recognition as sr
+from gtts import gTTS
+import io
+import tempfile
+import os
+
 from ..rag_pipeline.retriever import DocumentRetriever
 from ..nlp_services.translator import MultilingualTranslator
 from ..nlp_services.intent_classifier import IntentClassifier
@@ -14,6 +21,7 @@ class ResponseGenerator:
         self.retriever = retriever
         self.translator = translator
         self.intent_classifier = intent_classifier
+        self.recognizer = sr.Recognizer()
         
         # Response templates by intent
         self.response_templates = {
@@ -44,20 +52,138 @@ class ResponseGenerator:
             }
         }
 
-    # ----------------- Main generate_response -----------------
+    # ----------------- Voice Processing Methods -----------------
+    
+    async def process_voice_input(self, audio_data: bytes, audio_format: str, 
+                                query: str, context_docs: List[Dict[str, Any]],
+                                user_context: Dict[str, Any], language: str = 'en') -> Dict[str, Any]:
+        """Process voice input and return both text and audio response"""
+        try:
+            print(f"DEBUG: Processing voice input, audio size: {len(audio_data)} bytes")
+            
+            # Convert speech to text if no transcript provided
+            if not query:
+                transcript, detected_lang = await self._speech_to_text(audio_data, audio_format)
+                print(f"DEBUG: Speech-to-text result: {transcript}, language: {detected_lang}")
+            else:
+                transcript = query
+                detected_lang = language
+            
+            # Generate text response using existing method
+            text_response = await self.generate_response(
+                transcript, context_docs, user_context, detected_lang
+            )
+            
+            # Convert text response to speech
+            audio_response = await self._text_to_speech(
+                text_response.get('response', ''), 
+                detected_lang
+            )
+            
+            return {
+                'success': True,
+                'transcript': transcript,
+                'text_response': text_response,
+                'audio_response': audio_response,
+                'audio_format': 'mp3',
+                'detected_language': detected_lang,
+                'metadata': text_response.get('metadata', {})
+            }
+            
+        except Exception as e:
+            print(f"DEBUG: Voice processing failed: {str(e)}")
+            return {
+                'success': False,
+                'error': f"Voice processing failed: {str(e)}",
+                'transcript': "",
+                'text_response': await self._generate_fallback_response("", language, str(e)),
+                'audio_response': b"",
+                'detected_language': language
+            }
+    
+    async def _speech_to_text(self, audio_data: bytes, audio_format: str) -> Tuple[str, str]:
+        """Convert audio to text using Google Speech Recognition"""
+        try:
+            # Create temporary audio file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{audio_format}') as tmp:
+                tmp.write(audio_data)
+                tmp_path = tmp.name
+            
+            # Use speech recognition
+            with sr.AudioFile(tmp_path) as source:
+                audio = self.recognizer.record(source)
+                
+            # Recognize speech
+            text = self.recognizer.recognize_google(audio)
+            
+            # Detect language
+            language = self._detect_input_language(text)
+            
+            # Clean up
+            os.unlink(tmp_path)
+            
+            return text, language
+            
+        except sr.UnknownValueError:
+            raise Exception("Could not understand audio")
+        except sr.RequestError as e:
+            raise Exception(f"Speech recognition error: {e}")
+        finally:
+            # Ensure cleanup
+            if 'tmp_path' in locals() and os.path.exists(tmp_path):
+                try:
+                    os.unlink(tmp_path)
+                except:
+                    pass
+    
+    async def _text_to_speech(self, text: str, language: str) -> bytes:
+        """Convert text to speech using gTTS"""
+        try:
+            if language == 'ml':
+                # Malayalam TTS
+                tts = gTTS(text=text, lang='ml')
+            else:
+                # English TTS
+                tts = gTTS(text=text, lang='en')
+            
+            # Save to bytes buffer
+            audio_buffer = io.BytesIO()
+            tts.write_to_fp(audio_buffer)
+            audio_buffer.seek(0)
+            
+            return audio_buffer.getvalue()
+            
+        except Exception as e:
+            print(f"DEBUG: TTS failed: {str(e)}")
+            # Return empty audio on failure
+            return b""
+    
+    def _detect_input_language(self, text: str) -> str:
+        """Detect if input is Malayalam or English"""
+        if not text:
+            return 'en'
+        
+        # Simple detection based on Malayalam Unicode range
+        malayalam_chars = re.findall(r'[\u0D00-\u0D7F]', text)
+        if len(malayalam_chars) > len(text) * 0.3:  # 30% Malayalam characters
+            return 'ml'
+        return 'en'
+
+    # ----------------- Main Response Generation Methods -----------------
+    
     async def generate_response(
         self,
         query: str,
         context_docs: List[Dict[str, Any]],
         user_context: Dict[str, Any],
         language: str = 'en',
-        **kwargs  # allows extra arguments safely
+        **kwargs
     ) -> Dict[str, Any]:
         """Generate a comprehensive response using RAG and LLM."""
         try:
             print(f"DEBUG: Starting response generation for query: {query}")
             
-            # Classify intent - Use simple fallback if hybrid fails
+            # Classify intent
             print("DEBUG: About to classify intent...")
             try:
                 intent_info = await self.intent_classifier.classify_intent_hybrid(query, language)
@@ -65,7 +191,6 @@ class ResponseGenerator:
             except Exception as intent_error:
                 print(f"DEBUG: Hybrid intent classification failed: {str(intent_error)}")
                 print("DEBUG: Falling back to simple intent classification...")
-                # Fallback to simple rule-based classification
                 intent_info = self._simple_intent_classification(query)
                 print(f"DEBUG: Intent classified using fallback: {intent_info}")
             
@@ -115,7 +240,6 @@ class ResponseGenerator:
             
         except Exception as e:
             print(f"DEBUG: Exception in generate_response: {str(e)}")
-            print(f"DEBUG: Exception type: {type(e)}")
             import traceback
             traceback.print_exc()
             return await self._generate_fallback_response(query, language, str(e))
@@ -163,7 +287,6 @@ class ResponseGenerator:
         else:
             return {'intent': 'general', 'confidence': 0.5, 'primary_intent': 'general'}
 
-    # ----------------- Helper methods -----------------
     async def _build_response_prompt(self, query: str, context: str, template: Dict[str, Any], 
                                      user_context: Dict[str, Any], language: str, intent: str) -> str:
         system_prompt = template['system_prompt']

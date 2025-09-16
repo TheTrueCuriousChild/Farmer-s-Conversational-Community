@@ -7,17 +7,44 @@ const ChatbotPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
 
-  const sendMessage = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    const userMsg = { id: Date.now(), sender: 'user', text: input };
-    setMessages((prev) => [...prev, userMsg]);
-    setInput('');
-    setTimeout(() => {
-      const botMsg = { id: Date.now() + 1, sender: 'bot', text: getTranslation('chatbot.placeholderReply', language) };
-      setMessages((prev) => [...prev, botMsg]);
-    }, 600);
-  };
+const sendMessage = async (e) => {
+  e.preventDefault();
+  if (!input.trim()) return;
+
+  const userMsg = { id: Date.now(), sender: 'user', text: input };
+  setMessages((prev) => [...prev, userMsg]);
+  setInput('');
+
+  try {
+    const res = await fetch("http://localhost:8000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: "farmer-123",  // you can replace with actual user id
+        message: input,
+        language: language || "en"
+      }),
+    });
+
+    const data = await res.json();
+    const botMsg = { id: Date.now() + 1, sender: 'bot', text: data.response };
+
+    setMessages((prev) => [...prev, botMsg]);
+
+    // Optional: show suggestions
+    if (data.suggestions?.length) {
+      data.suggestions.forEach((s) => {
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now() + Math.random(), sender: 'bot', text: `💡 ${s}` }
+        ]);
+      });
+    }
+  } catch (err) {
+    const errorMsg = { id: Date.now() + 1, sender: 'bot', text: "⚠️ Server not reachable." };
+    setMessages((prev) => [...prev, errorMsg]);
+  }
+};
 
   return (
     <div style={{ padding: 'var(--spacing-xxl) 0' }}>

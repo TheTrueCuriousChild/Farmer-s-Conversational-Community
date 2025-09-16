@@ -1,12 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Dict, List
 import os
 from dotenv import load_dotenv
 import asyncio
+import base64
+from datetime import datetime
 
-# Import our AI services
+# ✅ AI services
 from ai_services.chatbot.conversation_handler import ConversationHandler
 from ai_services.chatbot.response_generator import ResponseGenerator
 from ai_services.chatbot.context_manager import ConversationContextManager
@@ -15,10 +17,13 @@ from ai_services.nlp_services.language_detector import LanguageDetector
 from ai_services.nlp_services.translator import MultilingualTranslator
 from ai_services.nlp_services.intent_classifier import IntentClassifier
 
-# ✅ Import from rag_pipeline
 from ai_services.rag_pipeline.retriever import DocumentRetriever
 from ai_services.rag_pipeline.embeddings_manager import EmbeddingsManager
 from ai_services.rag_pipeline.vector_store import VectorStore
+
+# ✅ Voice services from updated_voice/services/
+from ai_services.chatbot.response_generator import ResponseGenerator as VoiceChatResponse 
+from ai_services.services.voice_storage_service import VoiceStorageService
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +41,7 @@ app.add_middleware(
 
 # Initialize services
 ai_services = {}
+voice_storage_service = None
 
 class ChatRequest(BaseModel):
     user_id: str
@@ -50,10 +56,19 @@ class ChatResponse(BaseModel):
     language: str
     suggestions: list
 
+class VoiceChatResponse(BaseModel):
+    success: bool
+    transcript: str
+    text_response: str
+    audio_response: str  # base64 encoded
+    audio_format: str
+    language: str
+    intent: str
+    confidence: float
 
 @app.on_event("startup")
 async def startup_event():
-    global ai_services
+    global ai_services, voice_storage_service
     
     gemini_api_key = os.getenv("GEMINI_API_KEY")
     if not gemini_api_key:
@@ -68,9 +83,9 @@ async def startup_event():
         translator = MultilingualTranslator(gemini_api_key)
         intent_classifier = IntentClassifier(gemini_api_key)
         
-        # ✅ RAG Service
-        embeddings_manager = EmbeddingsManager(gemini_api_key)  # fixed
-        vector_store = VectorStore()  # ⚠️ check if it requires params
+        # RAG Service
+        embeddings_manager = EmbeddingsManager(gemini_api_key)
+        vector_store = VectorStore()
         retriever = DocumentRetriever(embeddings_manager, vector_store)
         
         # Chatbot Services  
@@ -83,6 +98,10 @@ async def startup_event():
         context_manager = ConversationContextManager()
         conversation_handler = ConversationHandler(response_generator, context_manager)
         
+        # Voice Storage Service
+       # from database.mongodb import get_database
+       # voice_storage_service = VoiceStorageService(get_database())
+        
         # Store services
         ai_services = {
             'language_detector': language_detector,
@@ -91,7 +110,8 @@ async def startup_event():
             'retriever': retriever,
             'response_generator': response_generator,
             'context_manager': context_manager,
-            'conversation_handler': conversation_handler
+            'conversation_handler': conversation_handler,
+            'voice_storage': voice_storage_service
         }
         
         print("✅ All AI services initialized successfully")
@@ -99,7 +119,6 @@ async def startup_event():
     except Exception as e:
         print(f"❌ Error initializing AI services: {str(e)}")
         raise e
-
 
 @app.get("/health")
 async def health_check():
@@ -110,7 +129,6 @@ async def health_check():
         "available_services": list(ai_services.keys())
     }
 
-
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     try:
@@ -119,11 +137,11 @@ async def chat_endpoint(request: ChatRequest):
         
         conversation_handler = ai_services['conversation_handler']
         
-        # Process the conversation with correct parameter name
+        # Process the conversation
         result = await conversation_handler.handle_user_message(
             user_id=request.user_id,
             message=request.message,
-            user_profile={'preferred_language': request.language}  # Changed from user_context to user_profile
+            user_profile={'preferred_language': request.language}
         )
         
         if not result.get('success', False):
@@ -146,7 +164,103 @@ async def chat_endpoint(request: ChatRequest):
         print(f"Chat endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
+@app.post("/chat/voice", response_model=VoiceChatResponse)
+async def voice_chat_endpoint(
+    background_tasks: BackgroundTasks,
+    user_id: str = Form(...),
+    audio_file: UploadFile = File(...),
+    language: Optional[str] = Form("auto"),
+    query: Optional[str] = Form("")
+):
+    try:
+        if not ai_services:
+            raise HTTPException(status_code=503, detail="AI services not initialized")
+        
+        # Read audio file
+        audio_data = await audio_file.read()
+        audio_format = audio_file.filename.split('.')[-1] if audio_file.filename else 'wav'
+        
+        # Get context documents
+        retriever = ai_services['retriever']
+        context_docs = await retriever.retrieve_relevant_info(query if query else "")
+        
+        # Process voice input
+        response_generator = ai_services['response_generator']
+        voice_result = await response_generator.process_voice_input(
+            audio_data, audio_format, query, context_docs, 
+            {'preferred_language': language}, language
+        )
+        
+        if not voice_result['success']:
+            raise HTTPException(status_code=500, detail=voice_result.get('error'))
+        
+        # Store in database (background task)
+        background_tasks.add_task(
+            store_voice_conversation,
+            user_id, audio_data, audio_format, voice_result
+        )
+        
+        return VoiceChatResponse(
+            success=True,
+            transcript=voice_result['transcript'],
+            text_response=voice_result['text_response'].get('response', ''),
+            audio_response=base64.b64encode(voice_result['audio_response']).decode('utf-8'),
+            audio_format="mp3",
+            language=voice_result['detected_language'],
+            intent=voice_result['text_response'].get('intent', 'general'),
+            confidence=voice_result['text_response'].get('confidence', 0.0)
+        )
+        
+    except Exception as e:
+        print(f"Voice chat endpoint error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Voice processing error: {str(e)}")
 
+async def store_voice_conversation(user_id: str, audio_data: bytes, 
+                                 audio_format: str, voice_result: Dict):
+    """Background task to store voice conversation"""
+    try:
+        voice_storage = ai_services['voice_storage']
+        
+        # Generate filename
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{user_id}_{timestamp}.{audio_format}"
+        
+        # Save audio file
+        audio_path = voice_storage.save_audio_file(audio_data, filename)
+        
+        # Prepare conversation data
+        conversation_data = {
+            'user_id': user_id,
+            'audio_file_path': audio_path,
+            'audio_duration': 0,
+            'audio_format': audio_format,
+            'transcript_text': voice_result['transcript'],
+            'detected_language': voice_result['detected_language'],
+            'gemini_response': voice_result['text_response'].get('response', ''),
+            'intent': voice_result['text_response'].get('intent', 'general'),
+            'confidence': voice_result['text_response'].get('confidence', 0.0)
+        }
+        
+        # Store in MongoDB
+        await voice_storage.save_voice_conversation(conversation_data)
+        
+    except Exception as e:
+        print(f"Failed to store voice conversation: {e}")
+
+@app.get("/voice/history/{user_id}")
+async def get_voice_history(user_id: str, limit: int = 10):
+    """Get user's voice conversation history"""
+    try:
+        voice_storage = ai_services['voice_storage']
+        history = await voice_storage.get_user_voice_history(user_id, limit)
+        
+        return {
+            "success": True,
+            "history": [conv.dict() for conv in history],
+            "total": len(history)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/conversation/{user_id}")
 async def get_conversation_history(user_id: str):
@@ -168,7 +282,6 @@ async def get_conversation_history(user_id: str):
     except Exception as e:
         print(f"Conversation history error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/translate")
 async def translate_endpoint(
@@ -205,7 +318,6 @@ async def translate_endpoint(
         print(f"Translation error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/classify-intent")
 async def classify_intent_endpoint(text: str, language: str = "en"):
     try:
@@ -230,7 +342,6 @@ async def classify_intent_endpoint(text: str, language: str = "en"):
         print(f"Intent classification error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.get("/language/detect")
 async def detect_language_endpoint(text: str):
     try:
@@ -251,7 +362,6 @@ async def detect_language_endpoint(text: str):
     except Exception as e:
         print(f"Language detection error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/health/services")
 async def service_health_check():
@@ -280,7 +390,6 @@ async def service_health_check():
         "services": health_status,
         "total_services": len(health_status)
     }
-
 
 if __name__ == "__main__":
     import uvicorn
