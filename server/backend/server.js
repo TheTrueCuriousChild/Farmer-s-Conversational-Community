@@ -13,7 +13,7 @@ const laborerRoutes = require("./routes/laborerRoutes")
 const aiRoutes = require("./routes/aiRoutes") // AI routes
 const contactRoutes = require("./routes/contactRoutes");
 const jiomartRoutes = require("./routes/jiomartRoutes");
-
+const communityRoutes = require("./routes/communityRoutes");
 const app = express()
 
 // Connect to database
@@ -55,7 +55,7 @@ app.use("*", (req, res) => {
 
 // Error handling middleware
 app.use(errorHandler)
-
+app.use("/community", communityRoutes);
 const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
