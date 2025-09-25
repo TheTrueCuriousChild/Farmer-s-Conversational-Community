@@ -37,7 +37,7 @@ class ConversationHandler:
             # Get relevant context (simplified - no RAG retrieval)
             context_docs = self._get_simple_context(message, intent_info)
             
-            # Generate response - FIXED: Pass arguments correctly
+            # Generate response
             response_data = await self.response_generator.generate_response(
                 query=message,
                 context_docs=context_docs,
@@ -314,9 +314,10 @@ class ConversationHandler:
         }
     
     async def get_conversation_summary(self, user_id: str) -> Dict[str, Any]:
-        """Get a summary of the user's conversation."""
+        """Get a summary of the user's conversation using structured history."""
         try:
-            history = await self.context_manager.get_conversation_history(user_id, 10)
+            # Use the new structured history method
+            history = await self.context_manager.get_structured_conversation_history(user_id, 10)
             context = await self.context_manager.get_user_context(user_id)
             
             if not history:
@@ -324,7 +325,8 @@ class ConversationHandler:
                     'summary': 'No conversation history found.',
                     'total_messages': 0,
                     'main_topics': [],
-                    'user_context': context
+                    'user_context': context,
+                    'recent_activity': []
                 }
             
             # Analyze conversation topics
@@ -346,12 +348,30 @@ class ConversationHandler:
             # Remove duplicates and get unique topics
             unique_topics = list(set(topics))
             
+            # Prepare recent activity with structured data
+            recent_activity = []
+            for msg in history[:3]:  # Last 3 messages
+                activity = {
+                    'type': msg.get('type'),
+                    'timestamp': msg.get('timestamp'),
+                    'language': msg.get('language', 'en')
+                }
+                
+                if msg.get('type') == 'user':
+                    activity['content'] = msg.get('content', '')
+                else:  # assistant
+                    activity['main_answer'] = msg.get('main_answer', '')
+                    activity['context_preview'] = msg.get('context', '')[:100] + '...' if msg.get('context') else ''
+                    activity['intent'] = msg.get('intent', 'general')
+                
+                recent_activity.append(activity)
+            
             return {
                 'summary': f'User has had {len(history)} interactions covering topics like {", ".join(unique_topics)}',
                 'total_messages': len(history),
                 'main_topics': unique_topics,
                 'user_context': context,
-                'recent_activity': history[:3]  # Last 3 messages
+                'recent_activity': recent_activity
             }
             
         except Exception as e:
@@ -360,5 +380,37 @@ class ConversationHandler:
                 'summary': 'Error retrieving conversation summary.',
                 'total_messages': 0,
                 'main_topics': [],
+                'error': str(e),
+                'recent_activity': []
+            }
+    
+    async def clear_conversation_history(self, user_id: str) -> Dict[str, Any]:
+        """Clear conversation history for a user."""
+        try:
+            success = await self.context_manager.clear_conversation_history(user_id)
+            return {
+                'success': success,
+                'message': 'Conversation history cleared successfully' if success else 'Failed to clear history'
+            }
+        except Exception as e:
+            print(f"Error clearing conversation history: {str(e)}")
+            return {
+                'success': False,
                 'error': str(e)
+            }
+    
+    async def get_conversation_statistics(self, user_id: str) -> Dict[str, Any]:
+        """Get detailed statistics about user's conversation history."""
+        try:
+            stats = await self.context_manager.get_conversation_stats(user_id)
+            return {
+                'success': True,
+                'statistics': stats
+            }
+        except Exception as e:
+            print(f"Error getting conversation statistics: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'statistics': {}
             }
