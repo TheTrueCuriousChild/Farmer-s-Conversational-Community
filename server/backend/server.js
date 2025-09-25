@@ -44,6 +44,7 @@ app.use("/laborers", laborerRoutes)
 app.use("/ai", aiRoutes) // AI routes
 app.use("/contact", contactRoutes); // Contact Us & IVR endpoints
 app.use("/jiomart", jiomartRoutes); // JioMart recommendation endpoints
+app.use("/community", communityRoutes);
 
 // 404 handler
 app.use("*", (req, res) => {

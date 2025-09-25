@@ -63,23 +63,26 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userData) => {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    });
-    let result = null;
-    try {
-      result = await response.json();
-    } catch (e) {
-      throw new Error('Server error: Invalid or empty response');
-    }
-    if (response.ok && result && result.success) {
-      handleAuthSuccess(result.data);
-    } else {
-      throw new Error((result && result.message) || 'Signup failed');
-    }
-  };
+  const response = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData),
+  });
+
+  let result = null;
+  try {
+    result = await response.json();
+  } catch (e) {
+    throw new Error("Server error: Invalid or empty response");
+  }
+
+  if (response.ok && result && result.success) {
+    // store token + user and update context
+    handleAuthSuccess(result.data);
+  } else {
+    throw new Error((result && result.message) || "Signup failed");
+  }
+};
 
   const logout = () => {
     localStorage.removeItem('token');
